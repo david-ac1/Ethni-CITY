@@ -49,15 +49,30 @@ export async function POST(req: NextRequest) {
       ],
     });
 
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          mimeType: file.type as "image/jpeg" | "image/png" | "image/webp",
-          data: base64,
-        },
-      },
-      ANALYSIS_PROMPT,
-    ]);
+    let result;
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        result = await model.generateContent([
+          {
+            inlineData: {
+              mimeType: file.type as "image/jpeg" | "image/png" | "image/webp",
+              data: base64,
+            },
+          },
+          ANALYSIS_PROMPT,
+        ]);
+        break; // Success, break out of loop
+      } catch (err: any) {
+        retries--;
+        console.warn(`Gemini API error in analyze-photo, retries left: ${retries} | Error: ${err.message}`);
+        if (retries === 0) throw err;
+        // Wait 3 seconds before retrying to let the gateway clear
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
+    }
+    
+    if (!result) throw new Error("Failed to generate content after retries");
 
     const rawText = result.response.text().trim();
 
