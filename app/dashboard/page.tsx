@@ -8,6 +8,52 @@ import SoundSpirit from "@/components/SoundSpirit";
 import { useEthniStore, PhotoTrip } from "@/lib/store";
 import type { CesiumMapHandle } from "@/components/CesiumMap";
 
+const compressImage = (file: File, maxWidth = 1024, maxHeight = 1024, quality = 0.8): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), { type: "image/jpeg" }));
+            } else {
+              resolve(file); // fallback to original if blob fails
+            }
+          },
+          "image/jpeg",
+          quality
+        );
+      };
+      img.onerror = () => resolve(file); // fallback
+    };
+    reader.onerror = () => resolve(file); // fallback
+  });
+};
+
 // Dynamically import CesiumMap (no SSR — uses browser APIs)
 const CesiumMap = dynamic(() => import("@/components/CesiumMap"), {
   ssr: false,
@@ -66,15 +112,18 @@ export default function DashboardPage() {
     };
 
     addTrip(newTrip);
-    setAgentStatus(`Uploading ${file.name}...`);
+    setAgentStatus(`Uploading and compressing ${file.name}...`);
 
     try {
+      // Step 0: Compress the image so we don't timeout the Gemini API with massive 10MB iPhone photos
+      const compressedFile = await compressImage(file);
+
       // Step 1: Analyze photo with Gemini Vision
       updateTrip(id, { status: "analyzing" });
       setAgentStatus(`Gemini is reading the cultural markers... 🔍`);
 
       const formData = new FormData();
-      formData.append("photo", file);
+      formData.append("photo", compressedFile);
 
       const analyzeRes = await fetch("/api/analyze-photo", { method: "POST", body: formData });
       if (!analyzeRes.ok) throw new Error("Photo analysis failed");
