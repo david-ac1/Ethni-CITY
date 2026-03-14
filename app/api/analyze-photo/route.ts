@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const base64 = Buffer.from(bytes).toString("base64");
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-2.5-flash",
       safetySettings: [
         { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
         { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },

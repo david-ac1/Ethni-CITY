@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const { location, photo_analysis, featured_artist, location_music_context, zine_hook } = body;
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-2.5-flash",
       generationConfig: {
         temperature: 0.85,
         topP: 0.95,
