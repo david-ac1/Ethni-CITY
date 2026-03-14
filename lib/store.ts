@@ -48,6 +48,7 @@ export interface ZineData {
   meta: {
     location: { city: string; country: string; neighbourhood: string };
     featured_artist: ArtistData;
+    all_artists: ArtistData[];
     location_music_context: string;
     photo_url?: string;
     generated_at: string;

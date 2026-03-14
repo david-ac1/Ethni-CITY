@@ -12,9 +12,10 @@ function buildArtistPrompt(
 ): string {
   return `You are an ethnomusicologist and cultural curator specializing in niche, underground, and heritage music from the Global South.
 
-Your task: Find 2–3 REAL, NICHE local artists from this specific location. These must be:
+Your task: Find exactly 5 REAL, NICHE local artists from this specific location. These must be:
 - Genuinely from or deeply associated with this exact area (not just the country)
 - NON-MAINSTREAM — not on international charts, not globally famous
+- Must be actively streaming on Spotify (do not hallucinate artists, pick real ones)
 - Authentic to the local culture — can be either traditional/heritage instrumentalists OR contemporary niche acts (e.g., local underground electronic, indie, regional hip-hop, experimental, modern RnB) as long as they represent the creative pulse of this specific location.
 - Streamable on at least one platform (Spotify, Apple Music, YouTube, Bandcamp, or SoundCloud)
 
@@ -95,7 +96,8 @@ export async function POST(req: NextRequest) {
         })
       );
       
-      artistData.artists = enrichedArtists;
+      // Filter out any artists that we couldn't find a single valid Spotify track for
+      artistData.artists = enrichedArtists.filter((a) => a.spotify_tracks && a.spotify_tracks.length > 0);
     }
 
     return NextResponse.json({

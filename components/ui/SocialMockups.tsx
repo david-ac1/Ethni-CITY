@@ -10,8 +10,8 @@ interface SocialMockupsProps {
 
 export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps) {
   const [activeTab, setActiveTab] = useState<"tiktok" | "instagram">("tiktok");
-  // Default to empty array if undefined
-  const trackList = zine.meta.featured_artist.spotify_tracks || [];
+  const allArtists = zine.meta.all_artists || [];
+  const primaryTrack = zine.meta.featured_artist.spotify_tracks?.[0] || null;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
@@ -39,19 +39,23 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
         {/* Phone Mockup Area */}
         <div className="flex-shrink-0">
           {activeTab === "tiktok" ? (
-            <TikTokMockup zine={zine} heroImageUrl={heroImageUrl} primaryTrack={trackList[0]} />
+            <TikTokMockup zine={zine} heroImageUrl={heroImageUrl} primaryTrack={primaryTrack} />
           ) : (
-            <InstagramMockup zine={zine} heroImageUrl={heroImageUrl} primaryTrack={trackList[0]} />
+            <InstagramMockup zine={zine} heroImageUrl={heroImageUrl} primaryTrack={primaryTrack} />
           )}
         </div>
 
         {/* Playable Tracklist sidebar */}
-        {trackList.length > 0 && (
+        {allArtists.length > 0 && (
           <div className="flex flex-col gap-3 w-full max-w-sm">
             <h3 className="font-black uppercase tracking-widest text-xs text-slate-400 mb-2 border-b border-slate-200 pb-2">
-              🎵 Found on Spotify: {zine.meta.featured_artist.name}
+              🎵 Sounds of {zine.meta.location.city}
             </h3>
-            {trackList.map((track, i) => (
+            {allArtists.map((artist, i) => {
+              const track = artist.spotify_tracks?.[0];
+              if (!track) return null;
+              
+              return (
               <div key={i} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 transition-colors">
                  {track.albumArtUrl ? (
                   <img src={track.albumArtUrl} alt="" className="w-12 h-12 rounded shadow-sm object-cover" />
@@ -62,7 +66,7 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
                 )}
                 <div className="flex flex-col min-w-0 flex-grow">
                   <span className="text-sm font-bold text-black truncate">{track.trackName}</span>
-                  <span className="text-[10px] text-slate-500 uppercase tracking-widest truncate">{i === 0 ? 'Featured Track' : 'Top Track'}</span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest truncate">{artist.name}</span>
                 </div>
                 {track.previewUrl ? (
                   <audio controls src={track.previewUrl} className="h-8 w-[100px] border border-slate-200 rounded-full bg-slate-50" />
@@ -72,14 +76,14 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
                   </a>
                 )}
               </div>
-            ))}
+            )})}
           </div>
         )}
-        {trackList.length === 0 && (
+        {allArtists.length === 0 && (
           <div className="w-full max-w-sm p-6 border-2 border-dashed border-slate-200 rounded-xl text-center">
              <span className="material-symbols-outlined text-slate-300 text-4xl mb-2 block">music_off</span>
              <p className="text-sm font-bold text-slate-500 uppercase">No Spotify Tracks Found</p>
-             <p className="text-xs text-slate-400 mt-1">This artist might be too underground or not streaming their music.</p>
+             <p className="text-xs text-slate-400 mt-1">These artists might be too underground or not streaming their music.</p>
           </div>
         )}
       </div>

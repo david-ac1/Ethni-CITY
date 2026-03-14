@@ -143,6 +143,7 @@ export default function DashboardPage() {
           },
           photo_url: activeTrip.previewUrl,
           featured_artist: featuredArtist,
+          all_artists: discoveredArtists,
           location_music_context: useEthniStore.getState().locationMusicContext,
           zine_hook: zineHook,
         }),
