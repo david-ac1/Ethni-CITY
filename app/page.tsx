@@ -6,10 +6,6 @@ import Link from "next/link";
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#fdf6e3" }}>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-      />
 
       <Header variant="hook" />
 
