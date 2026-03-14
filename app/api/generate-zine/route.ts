@@ -24,6 +24,7 @@ interface GenerateZineBody {
     vibe_descriptors: string[];
     architecture_style: string;
   };
+  photo_url: string;
   featured_artist: Artist;
   location_music_context: string;
   zine_hook: string;
@@ -32,7 +33,7 @@ interface GenerateZineBody {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as GenerateZineBody;
-    const { location, photo_analysis, featured_artist, location_music_context, zine_hook } = body;
+    const { location, photo_analysis, photo_url, featured_artist, location_music_context, zine_hook } = body;
 
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
@@ -77,6 +78,7 @@ Your task: Generate the editorial copy for a Sonic Story-Zine spread. Return ONL
           location,
           featured_artist,
           location_music_context,
+          photo_url,
           generated_at: new Date().toISOString(),
         },
       },

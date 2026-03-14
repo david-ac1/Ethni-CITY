@@ -28,6 +28,12 @@ export interface ArtistData {
   spotify_search: string;
   youtube_search: string;
   streaming_likelihood: string;
+  spotify_track?: {
+    trackName: string;
+    previewUrl: string | null;
+    albumArtUrl: string | null;
+    spotifyUrl: string;
+  };
 }
 
 export interface ZineData {
@@ -43,6 +49,7 @@ export interface ZineData {
     location: { city: string; country: string; neighbourhood: string };
     featured_artist: ArtistData;
     location_music_context: string;
+    photo_url?: string;
     generated_at: string;
   };
 }

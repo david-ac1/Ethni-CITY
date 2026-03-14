@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -27,6 +28,7 @@ const PANELS = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const mapRef = useRef<CesiumMapHandle>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeNav, setActiveNav] = useState("dashboard");
@@ -139,6 +141,7 @@ export default function DashboardPage() {
             vibe_descriptors: activeTrip.analysis.vibe_descriptors,
             architecture_style: activeTrip.analysis.architecture_style,
           },
+          photo_url: activeTrip.previewUrl,
           featured_artist: featuredArtist,
           location_music_context: useEthniStore.getState().locationMusicContext,
           zine_hook: zineHook,
@@ -147,12 +150,13 @@ export default function DashboardPage() {
 
       if (!res.ok) throw new Error("Zine generation failed");
       const { zine } = await res.json();
+
       setCurrentZine(zine);
       setIsGeneratingZine(false);
       setAgentStatus("🎉 Zine ready! Click to open your Sonic Story.");
 
-      // Navigate to zine page with generated ID
-      window.location.href = `/zine/${zine.zine_id}`;
+      // Navigate to zine page safely to preserve Zustand state
+      router.push(`/zine/${zine.zine_id}`);
 
     } catch (err) {
       console.error("Zine generation error:", err);

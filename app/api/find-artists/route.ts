@@ -15,7 +15,7 @@ function buildArtistPrompt(
 Your task: Find 2–3 REAL, NICHE local artists from this specific location. These must be:
 - Genuinely from or deeply associated with this exact area (not just the country)
 - NON-MAINSTREAM — not on international charts, not globally famous
-- Authentic to the local musical tradition, not fusion pop
+- Authentic to the local culture — can be either traditional/heritage instrumentalists OR contemporary niche acts (e.g., local underground electronic, indie, regional hip-hop, experimental, modern RnB) as long as they represent the creative pulse of this specific location.
 - Streamable on at least one platform (Spotify, Apple Music, YouTube, Bandcamp, or SoundCloud)
 
 Location: ${neighbourhood}, ${city}, ${country}
@@ -35,6 +35,7 @@ Return ONLY valid JSON in this exact schema:
       "genre": "string — specific genre (e.g. 'Afrobeats Lagos underground', 'Lagos Fuji revival')",
       "origin": "string — specific city/neighbourhood they are from",
       "bio": "string — 2 sentences. First: their story/sound. Second: cultural connection to this location.",
+      "recommended_song": "string — name of a specific, real song by this artist that fits the vibe",
       "why_discovered": "string — 1 sentence explaining what cultural marker led to this discovery",
       "spotify_search": "string — exact Spotify search query to find them",
       "youtube_search": "string — exact YouTube search query",
@@ -79,6 +80,23 @@ export async function POST(req: NextRequest) {
     // Strip markdown fences
     const jsonText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
     const artistData = JSON.parse(jsonText);
+
+    // Fetch real Spotify tracks for the discovered artists
+    if (artistData.artists && Array.isArray(artistData.artists)) {
+      const { searchArtistTrack } = await import("@/lib/spotify");
+      
+      const enrichedArtists = await Promise.all(
+        artistData.artists.map(async (artist: any) => {
+          const spotifyTrack = await searchArtistTrack(artist.name, artist.recommended_song || "");
+          return {
+            ...artist,
+            spotify_track: spotifyTrack,
+          };
+        })
+      );
+      
+      artistData.artists = enrichedArtists;
+    }
 
     return NextResponse.json({
       success: true,

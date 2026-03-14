@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { useEthniStore, ZineData } from "@/lib/store";
+import SocialMockups from "@/components/ui/SocialMockups";
 
 interface ZinePageProps {
   params: Promise<{ id: string }>;
@@ -39,6 +40,7 @@ export default function ZinePage({ params }: ZinePageProps) {
     artist_bio_paragraph: zine?.artist_bio_paragraph || FALLBACK_ZINE.artist_bio_paragraph || "",
     location_lore: zine?.location_lore || FALLBACK_ZINE.location_lore || "",
     share_caption: zine?.share_caption || FALLBACK_ZINE.share_caption || "",
+    photo_url: zine?.meta?.photo_url || "",
     location: zine?.meta?.location || { city: "Lagos", country: "Nigeria", neighbourhood: "Balogun Market" },
     artist: zine?.meta?.featured_artist || discoveredArtists[0] || { name: "ILÊ AIYÊ", genre: "Afro-Brazilian Neo-Pop", spotify_search: "Ilê Aiyê", youtube_search: "Ilê Aiyê music" },
   };
@@ -61,48 +63,53 @@ export default function ZinePage({ params }: ZinePageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 
           {/* Hero Photo */}
-          <div className="lg:col-span-8 relative group overflow-hidden rounded-xl" style={{ backgroundColor: "#374151" }}>
-            <div
-              className="vintage-sat h-[600px] w-full transition-transform duration-700 group-hover:scale-105 relative"
-              style={{ background: "linear-gradient(135deg, #b87333 0%, #e2725b 30%, #d4af37 60%, #9c06f9 100%)" }}
-            >
-              {/* Placeholder scene */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: "120px" }}>storefront</span>
-                  <p className="text-sm font-bold uppercase tracking-widest mt-2">{displayData.location.neighbourhood} — AI Enhanced</p>
+          <div className="lg:col-span-8 relative group overflow-hidden rounded-xl bg-slate-800">
+            <div className="h-[600px] w-full relative">
+              {displayData.photo_url ? (
+                <img src={displayData.photo_url} alt="" className="w-full h-full object-cover vintage-sat transition-transform duration-700 group-hover:scale-105" />
+              ) : (
+                <div
+                  className="w-full h-full vintage-sat transition-transform duration-700 group-hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #b87333 0%, #e2725b 30%, #d4af37 60%, #9c06f9 100%)" }}
+                >
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: "120px" }}>storefront</span>
+                      <p className="text-sm font-bold uppercase tracking-widest mt-2">{displayData.location.neighbourhood} — AI Enhanced</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            <div className="absolute inset-0 halftone-overlay" style={{ mixBlendMode: "multiply", color: "#1e293b" }} />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 55%)" }} />
+            <div className="absolute inset-0 halftone-overlay pointer-events-none mix-blend-multiply" style={{ color: "#1e293b" }} />
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 55%)" }} />
 
             {/* Pull quote in hero */}
             {displayData.pull_quote && (
-              <div className="absolute top-8 right-8 max-w-xs p-4 rounded-xl neo-brutalism-shadow-sm" style={{ backgroundColor: "rgba(212,175,55,0.9)" }}>
+              <div className="absolute top-8 right-8 max-w-xs p-4 rounded-xl neo-brutalism-shadow-sm z-10" style={{ backgroundColor: "rgba(212,175,55,0.9)" }}>
                 <p className="font-bold text-sm italic text-black">"{displayData.pull_quote}"</p>
               </div>
             )}
 
             {/* Caption */}
-            <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full">
+            <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full z-10">
               <h1 className="text-4xl md:text-6xl text-white italic leading-tight max-w-2xl" style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}>
                 &ldquo;{displayData.headline}{" "}
                 <span style={{ color: "#d4af37" }}>{displayData.subheadline}&rdquo;</span>
               </h1>
               {displayData.photo_caption && (
-                <p className="text-white/70 text-sm mt-3 max-w-lg font-medium">{displayData.photo_caption}</p>
+                <p className="text-white/90 text-sm mt-3 max-w-lg font-medium drop-shadow-md">{displayData.photo_caption}</p>
               )}
-              <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center gap-2 mt-4 drop-shadow-md">
                 <span className="material-symbols-outlined text-sm" style={{ color: "#d4af37" }}>location_on</span>
-                <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.8)" }}>
+                <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.9)" }}>
                   {displayData.location.neighbourhood}, {displayData.location.city}, {displayData.location.country}
                 </span>
               </div>
             </div>
 
-            <div className="absolute top-4 left-4 px-3 py-1 rounded text-white text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
+            <div className="absolute top-4 left-4 px-3 py-1 rounded text-white text-[10px] font-bold uppercase tracking-widest z-10" style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
               Ethni-CITY Zine #{zineId}
             </div>
           </div>
@@ -205,8 +212,27 @@ export default function ZinePage({ params }: ZinePageProps) {
           ))}
         </div>
 
+        {/* Social Mockups Section */}
+        {zine && zine.meta && (
+          <div className="mt-20 flex flex-col items-center">
+            <div className="text-center mb-10 max-w-2xl">
+              <span className="material-symbols-outlined text-4xl mb-4" style={{ color: "#9c06f9" }}>campaign</span>
+              <h2 className="text-3xl font-black uppercase italic tracking-widest mb-4" style={{ color: "#1b0f23" }}>Preview Your Share</h2>
+              <p className="font-bold text-slate-500">
+                This is how your Sonic Story-Zine will look when you amplify {displayData.artist.name} to the world. The algorithm loves a good track.
+              </p>
+            </div>
+            
+            {/* The mockups component takes the full zine object to build the UI */}
+            <SocialMockups 
+              zine={zine} 
+              heroImageUrl="https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=1000&auto=format&fit=crop" 
+            />
+          </div>
+        )}
+
         {/* Footer CTA */}
-        <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-8 py-10" style={{ borderTop: "1px solid rgba(156,6,249,0.15)" }}>
+        <div className="mt-20 flex flex-col md:flex-row items-center justify-between gap-8 py-10" style={{ borderTop: "1px solid rgba(156,6,249,0.15)" }}>
           <div className="flex flex-col gap-2 text-center md:text-left">
             <h3 className="text-xl font-bold uppercase tracking-widest" style={{ color: "#9c06f9" }}>Support the Vision</h3>
             <p className="max-w-md" style={{ color: "#64748b" }}>
