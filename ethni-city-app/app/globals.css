@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+/* ─── Design Token: CSS Variables ─── */
+:root {
+  --color-primary: #9c06f9;
+  --color-malachite: #00cf64;
+  --color-terracotta: #e2725b;
+  --color-electric-violet: #8f00ff;
+  --color-accent-gold: #d4af37;
+  --color-accent-copper: #b87333;
+  --color-retro-green: #39ff14;
+  --color-bg-light: #fcfaf2;
+  --color-bg-dark: #1b0f23;
+  --border-thick: 3px solid #1b0f23;
+}
+
+/* ─── Base ─── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg-light);
+  font-family: var(--font-space-grotesk), sans-serif;
+  color: #1b0f23;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ─── Neo-Brutalism Utilities ─── */
+.neo-brutalism-shadow {
+  box-shadow: 8px 8px 0 0 rgba(0, 0, 0, 1);
+}
+
+.neo-brutalism-shadow-sm {
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 1);
+}
+
+.mechanical-shadow {
+  box-shadow: 6px 6px 0px #1b0f23;
+}
+
+.thick-outline {
+  border: 3px solid #1b0f23;
+}
+
+/* ─── Texture ─── */
+.grain-texture {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+.halftone-overlay {
+  background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.vintage-sat {
+  filter: saturate(1.4) contrast(1.1) sepia(0.1);
+}
+
+/* ─── Dashboard: Pattern Clash ─── */
+.pattern-clash {
+  background-image:
+    radial-gradient(#9c06f9 1px, transparent 1px),
+    linear-gradient(45deg, #f7f5f8 25%, transparent 25%);
+  background-size: 10px 10px, 40px 40px;
+}
+
+/* ─── Dashboard: Dial Knob ─── */
+.dial-knob {
+  background: conic-gradient(from 0deg, #b87333, #8b4513, #b87333);
+  border: 2px solid #1b0f23;
+}
+
+/* ─── Hammered Copper Texture ─── */
+.hammered-texture {
+  background: linear-gradient(135deg, #b87333 0%, #8b4513 50%, #b87333 100%);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), 4px 4px 0 0 rgba(0, 0, 0, 0.8);
+}
+
+/* ─── Sticker Logo ─── */
+.sticker-logo {
+  filter: drop-shadow(4px 4px 0 white);
+}
+
+/* ─── Text Selection ─── */
+::selection {
+  background-color: var(--color-malachite);
+  color: white;
+}
+
+/* ─── Scrollbar Styling ─── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1b0f23;
+}
+::-webkit-scrollbar-thumb {
+  background: #9c06f9;
+  border-radius: 4px;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Waveform Animation ─── */
+@keyframes waveform {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1.0); }
+}
+
+.waveform-bar {
+  transform-origin: bottom;
+}
+
+.waveform-bar:nth-child(1) { animation: waveform 0.8s ease-in-out infinite; }
+.waveform-bar:nth-child(2) { animation: waveform 0.9s ease-in-out infinite 0.1s; }
+.waveform-bar:nth-child(3) { animation: waveform 0.7s ease-in-out infinite 0.2s; }
+.waveform-bar:nth-child(4) { animation: waveform 1.0s ease-in-out infinite 0.3s; }
+.waveform-bar:nth-child(5) { animation: waveform 0.85s ease-in-out infinite 0.15s; }
+.waveform-bar:nth-child(6) { animation: waveform 0.75s ease-in-out infinite 0.25s; }
+.waveform-bar:nth-child(7) { animation: waveform 0.95s ease-in-out infinite 0.05s; }
+
+/* ─── Sonic Pulse Rings ─── */
+@keyframes sonic-pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.sonic-ring {
+  animation: sonic-pulse 2s ease-out infinite;
+}
+.sonic-ring:nth-child(2) { animation-delay: 0.6s; }
+.sonic-ring:nth-child(3) { animation-delay: 1.2s; }
+
+/* ─── Retro Terminal Text ─── */
+.retro-terminal {
+  font-family: 'Courier New', 'Courier', monospace;
+  color: var(--color-retro-green);
+  text-shadow: 0 0 8px rgba(57, 255, 20, 0.5);
+}
