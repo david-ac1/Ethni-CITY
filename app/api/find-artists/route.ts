@@ -12,7 +12,7 @@ function buildArtistPrompt(
 ): string {
   return `You are an ethnomusicologist and cultural curator specializing in niche, underground, and heritage music from the Global South.
 
-Your task: Find exactly 5 REAL, NICHE local artists from this specific location. These must be:
+Your task: Find exactly 8 REAL, NICHE local artists from this specific location. These must be:
 - Genuinely from or deeply associated with this exact area (not just the country)
 - NON-MAINSTREAM — not on international charts, not globally famous
 - Must be actively streaming on Spotify (do not hallucinate artists, pick real ones)
@@ -38,7 +38,7 @@ Return ONLY valid JSON in this exact schema:
       "bio": "string — 2 sentences. First: their story/sound. Second: cultural connection to this location.",
       "recommended_song": "string — name of a specific, real song by this artist that fits the vibe",
       "why_discovered": "string — 1 sentence explaining what cultural marker led to this discovery",
-      "spotify_search": "string — exact Spotify search query to find them",
+      "spotify_search": "string — STRICT spotify search query using format 'artist:\"Name\" genre:\"Local Genre\"'",
       "youtube_search": "string — exact YouTube search query",
       "streaming_likelihood": "high|medium|low"
     }
@@ -74,35 +74,68 @@ export async function POST(req: NextRequest) {
     });
 
     const prompt = buildArtistPrompt(city, country, neighbourhood, cultural_markers, vibe_descriptors);
+    
+    let validArtists: any[] = [];
+    let attempts = 0;
+    let finalContext = "";
+    let finalHook = "";
+    const { searchArtistTrack } = await import("@/lib/spotify");
 
-    const result = await model.generateContent(prompt);
-    const rawText = result.response.text().trim();
+    console.log(`Starting artist persistence loop for ${city}, ${country}...`);
 
-    // Strip markdown fences
-    const jsonText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
-    const artistData = JSON.parse(jsonText);
-
-    // Fetch real Spotify tracks for the discovered artists
-    if (artistData.artists && Array.isArray(artistData.artists)) {
-      const { searchArtistTrack } = await import("@/lib/spotify");
+    while (validArtists.length < 5 && attempts < 3) {
+      console.log(`Attempt ${attempts + 1}: Asking Gemini for 8 artists...`);
+      const result = await model.generateContent(prompt);
+      const rawText = result.response.text().trim();
+      const jsonText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
       
-      const enrichedArtists = await Promise.all(
-        artistData.artists.map(async (artist: any) => {
-          const spotifyTracks = await searchArtistTrack(artist.name, artist.recommended_song || "");
-          return {
-            ...artist,
-            spotify_tracks: spotifyTracks,
-          };
-        })
-      );
+      let artistData;
+      try {
+        artistData = JSON.parse(jsonText);
+      } catch (e) {
+        console.error("Failed to parse Gemini JSON:", e);
+        attempts++;
+        continue;
+      }
+
+      finalContext = artistData.location_music_context || finalContext;
+      finalHook = artistData.zine_hook || finalHook;
+
+      if (artistData.artists && Array.isArray(artistData.artists)) {
+        console.log(`Found ${artistData.artists.length} raw artists from Gemini. Validating on Spotify...`);
+        const enrichedArtists = await Promise.all(
+          artistData.artists.map(async (artist: any) => {
+            const spotifyTracks = await searchArtistTrack(artist.name, artist.recommended_song || "", artist.spotify_search);
+            return {
+              ...artist,
+              spotify_tracks: spotifyTracks,
+            };
+          })
+        );
+        
+        // Filter out any artists that we couldn't find a single valid Spotify track for
+        const filtered = enrichedArtists.filter((a) => a.spotify_tracks && a.spotify_tracks.length > 0);
+        
+        for (const f of filtered) {
+          if (!validArtists.find(va => va.name === f.name)) {
+            validArtists.push(f);
+            console.log(`✅ Verified streamable artist: ${f.name}`);
+          }
+        }
+      }
       
-      // Filter out any artists that we couldn't find a single valid Spotify track for
-      artistData.artists = enrichedArtists.filter((a) => a.spotify_tracks && a.spotify_tracks.length > 0);
+      console.log(`End of attempt ${attempts + 1}. Valid roster size: ${validArtists.length}/5`);
+      attempts++;
     }
+
+    // Trim to exactly 5 artists max
+    const finalRoster = validArtists.slice(0, 5);
 
     return NextResponse.json({
       success: true,
-      ...artistData,
+      artists: finalRoster,
+      location_music_context: finalContext,
+      zine_hook: finalHook,
     });
   } catch (error) {
     console.error("find-artists error:", error);
