@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ethni-CITY Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#9c06f9",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#1b0f23",
+                        "mechanical-copper": "#b87333",
+                        "retro-green": "#39ff14",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .thick-outline { border: 3px solid #1b0f23; }
+        .mechanical-shadow { box-shadow: 6px 6px 0px #1b0f23; }
+        .pattern-clash {
+            background-image: radial-gradient(#9c06f9 1px, transparent 1px), linear-gradient(45deg, #f7f5f8 25%, transparent 25%);
+            background-size: 10px 10px, 40px 40px;
+        }
+        .dial-knob {
+            background: conic-gradient(from 0deg, #b87333, #8b4513, #b87333);
+            border: 2px solid #1b0f23;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex h-screen overflow-hidden p-4 gap-4">
+<!-- Left Sidebar: Mascot & Status -->
+<aside class="w-80 flex flex-col gap-4">
+<div class="thick-outline bg-white p-6 rounded-xl mechanical-shadow flex flex-col gap-6 relative">
+<!-- Mascot -->
+<div class="flex flex-col items-center gap-4">
+<div class="relative w-32 h-32 rounded-full thick-outline overflow-hidden bg-primary/20">
+<img class="w-full h-full object-cover" data-alt="Stylized geometric sound spirit mascot illustration" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACrNHWIkZM96UEYXa72g4_Wn7f8xfnQQiKezXFJ6rln62idueSAJo67jYbt3dS0l5x8UBbgCjJBk1dE2J2-o3elS2no44SRY0wO6yZgo1OpxEFAk0KmucRKxmlAqHjwX6VzUYGSbDp7nG_sy2XqqGcVw1edpAH-g8eB4w-0RfDqVAYrKP7p5fRh8OWWnr2nM8bOHLV7gl009vcttx1VumqUxPvSntPzz_E2AVBY1r4fRDwVbxty6LImIfqwf0t6q5nS4rufDAHahFX"/>
+</div>
+<div class="relative bg-white thick-outline p-3 rounded-lg -mt-2">
+<div class="flex gap-1 h-8 items-center justify-center">
+<span class="w-1 h-4 bg-primary rounded-full"></span>
+<span class="w-1 h-8 bg-primary rounded-full"></span>
+<span class="w-1 h-5 bg-primary rounded-full"></span>
+<span class="w-1 h-7 bg-primary rounded-full"></span>
+<span class="w-1 h-3 bg-primary rounded-full"></span>
+</div>
+</div>
+</div>
+<!-- Speech Bubble -->
+<div class="bg-primary text-white p-4 thick-outline rounded-xl relative">
+<p class="font-bold text-sm uppercase">"Drop your photos here! Niche Mode: ON."</p>
+<div class="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-primary thick-outline rotate-45 border-t-0 border-r-0"></div>
+</div>
+<!-- Retro Display -->
+<div class="bg-black p-4 rounded-lg thick-outline">
+<p class="text-[10px] text-retro-green/50 font-mono mb-1 uppercase tracking-widest">System Beacon</p>
+<p class="text-retro-green font-mono text-sm leading-tight uppercase">SENSING LOCATION:<br/>LAGOS, NIGERIA</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 thick-outline bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-bold text-sm uppercase">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 p-3 thick-outline bg-white hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-bold text-sm uppercase">Explorer</span>
+</a>
+<a class="flex items-center gap-3 p-3 thick-outline bg-white hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-bold text-sm uppercase">Zine Factory</span>
+</a>
+</nav>
+</div>
+<!-- Analog Controls Section -->
+<div class="thick-outline bg-slate-200 p-6 rounded-xl flex-grow mechanical-shadow pattern-clash border-t-8 border-slate-300">
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col items-center gap-2">
+<div class="dial-knob w-16 h-16 rounded-full flex items-center justify-center shadow-inner">
+<div class="w-1 h-6 bg-slate-900 -mt-6 rounded-full origin-bottom"></div>
+</div>
+<span class="text-[10px] font-bold uppercase">Frequency</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="dial-knob w-16 h-16 rounded-full flex items-center justify-center shadow-inner">
+<div class="w-1 h-6 bg-slate-900 -mt-6 rounded-full rotate-45 origin-bottom"></div>
+</div>
+<span class="text-[10px] font-bold uppercase">Gain</span>
+</div>
+</div>
+<div class="mt-8 flex justify-center">
+<div class="w-12 h-20 bg-slate-800 rounded thick-outline relative flex flex-col items-center py-2 gap-4">
+<div class="w-8 h-4 bg-mechanical-copper thick-outline rounded"></div>
+<div class="w-8 h-8 bg-slate-400 thick-outline rounded-full shadow-lg cursor-pointer"></div>
+<span class="absolute -bottom-6 text-[10px] font-bold uppercase">Override</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Center: Porthole Map Workspace -->
+<main class="flex-grow relative flex flex-col gap-4">
+<header class="flex justify-between items-center bg-white thick-outline p-4 rounded-xl mechanical-shadow">
+<div class="flex items-center gap-4">
+<div class="size-8 bg-primary rounded-lg thick-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-white">star_rate</span>
+</div>
+<h1 class="text-2xl font-bold uppercase tracking-tighter italic">Ethni-CITY / <span class="text-primary">Lagos Core</span></h1>
+</div>
+<div class="flex gap-4">
+<div class="thick-outline bg-slate-100 flex items-center px-4 rounded-lg h-10">
+<span class="material-symbols-outlined text-slate-400 mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm font-bold uppercase" placeholder="Balogun Market" type="text"/>
+</div>
+<div class="size-10 bg-mechanical-copper thick-outline rounded-full overflow-hidden">
+<img class="w-full h-full" data-alt="User profile avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClBsM8eWvraZ9ahhc5LrOW_ZJaZ95_nozL2b5mmNKwZwmvHz0ELMTyABo6maRIMfEjLPTqDKgk1B1h5lYPLtF7EJgZefNeMY_lgpC1DEdo3zIKO7YtXXyJd0gZB2HAgRAHh0qUAlzzj1gONLl3jqTn8_ipxTlLqSnq_obIgSi5gf8LaPmmS_m2LaJSOUayxETPcqFQVnd-ZjJ0ipTccr6NmrLa_gRRrA6TtlZTb4PiqaWXZcThtevvJi_NO3LYG2Q8y9yQVdrn8fdv"/>
+</div>
+</div>
+</header>
+<div class="flex-grow bg-slate-900 thick-outline rounded-[3rem] overflow-hidden relative shadow-inner">
+<!-- Simulated 3D Toon Map -->
+<div class="absolute inset-0 grayscale contrast-125 brightness-75 opacity-40 mix-blend-overlay">
+<img class="w-full h-full object-cover" data-alt="Toon-shaded 3D map of Lagos street grid" data-location="Lagos, Nigeria" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqRAaN2vo1ZAJ6ls6snJ96FQUP4HFsJdln-2VEdi5GGhY5gar5b6TYajiqvq1SmpDGLPS-CdRhAWvnTbSHuJ81GfptFwCRyjcjVdHDoV9W-q0nD46P47PYiLHHs6gxzcTYSuC1RdmBUtkjuiNJ5jzz-mlqXT2VPZK--EREFqlRPeYGf6V4E2CfhWJB7tBBWfLD3g7dQh_eOgtv-MxBOOzjnE9ABzjohoaX71ER8hcY_m7tgNSqDTSkaU6Qvo8JQXQjkegqu_fgXhD_"/>
+</div>
+<!-- Map UI Overlays -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="relative">
+<!-- Golden Sound Waves -->
+<div class="absolute -inset-16 border-4 border-yellow-500 rounded-full opacity-20 scale-75"></div>
+<div class="absolute -inset-24 border-2 border-yellow-500 rounded-full opacity-10"></div>
+<!-- Cursor -->
+<div class="bg-white thick-outline p-2 px-4 rounded-lg flex items-center gap-2 pointer-events-auto">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<span class="font-bold text-xs uppercase">Balogun Market</span>
+</div>
+</div>
+</div>
+<!-- Map Controls -->
+<div class="absolute bottom-10 right-10 flex flex-col gap-2">
+<button class="size-12 bg-white thick-outline flex items-center justify-center hover:bg-slate-100"><span class="material-symbols-outlined">add</span></button>
+<button class="size-12 bg-white thick-outline flex items-center justify-center hover:bg-slate-100"><span class="material-symbols-outlined">remove</span></button>
+<button class="size-12 bg-primary thick-outline text-white flex items-center justify-center mt-4"><span class="material-symbols-outlined">near_me</span></button>
+</div>
+</div>
+</main>
+<!-- Right Panel: Trips & Zine -->
+<aside class="w-96 flex flex-col gap-4">
+<div class="thick-outline bg-white p-6 rounded-xl mechanical-shadow flex flex-col gap-6">
+<div>
+<h2 class="text-xl font-bold uppercase italic border-b-4 border-primary inline-block">Your Raw Trips</h2>
+<p class="text-xs text-slate-500 mt-2 font-bold uppercase">Unedited captures from the field</p>
+</div>
+<!-- Assembly Line Photos -->
+<div class="flex flex-col gap-4 relative">
+<div class="absolute left-6 top-0 bottom-0 w-1 bg-slate-200 -z-10"></div>
+<div class="flex items-center gap-4">
+<div class="size-12 bg-white thick-outline rounded flex items-center justify-center font-bold">01</div>
+<div class="flex-grow thick-outline overflow-hidden rounded-lg aspect-video relative">
+<img class="w-full h-full object-cover" data-alt="Raw photo of Lagos market entrance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMgyN-44Gn-ps2DTmN98Hbmfkjt4TiXnQLaQ6FfXsKejyLUYppi1FR7B_fIXz8D9wrWKNGjsMGhyGpUZ7UDgKX5iHMOdnLOTmtfawlS7cV-j30wDHiKMvFaSYlOPGzYMoj4mlEXOXDap1vYPAZqWNovbSQ1XReOOIK3m6Dv33YpI4XAj0etP7iNWHeH30kYW_LcjV1bMrGF5SSLFvf5OB72XcFcbZ-Yrqm7LmzKaTSgAAmJs86LlPNM8SB4uB2cEdPQ5Ctd_ht4ifi"/>
+<div class="absolute inset-0 bg-retro-green/20 mix-blend-overlay"></div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-12 bg-white thick-outline rounded flex items-center justify-center font-bold">02</div>
+<div class="flex-grow thick-outline overflow-hidden rounded-lg aspect-video relative">
+<img class="w-full h-full object-cover" data-alt="Raw photo of urban street traffic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRIkuAz58Zc-Pfno-bhlGL_2DGvKB1N4-IK5eSHXgCZMJAZ9cY_uoyjN4XzzdH1NLN-3AmErV_byFPBm5MFYoYPJDSgCeONk_ufB8vrg35wStY876ldfyGon43VqE0caiWqYyt0jHv0efgA_RRk0XEItnpH-LOyqBfggH2XnpCBjhHl9gceCLPOTsDWiA8De0CqlntVYh9e2g5iTlAb-dMgao-2_CV1oTMFCI53CY9biQoC095SAMazQTB6p20EaaCFWlHMwdXQOAR"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-12 bg-white thick-outline rounded flex items-center justify-center font-bold">03</div>
+<div class="flex-grow thick-outline overflow-hidden rounded-lg aspect-video relative opacity-50">
+<img class="w-full h-full object-cover" data-alt="Raw photo of Lagos street art" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_rzz_q0tU__xAykSLqNjaTIEsPBtincNoVnBgrlmQ7BWbZTiu9mM13Jc3ikmKtNAE3z9LB-K3g1FBPNho3fGH4vbw3bo8wzOpRlL4UVy1hZWbxh5UlsFkzU9hDbPv6kzyvch-cxAq8mZWlR3Fv2JR_UhZlGUrDNLnTe3ILV2cbUQ8ddewoISuWgNJvTfI8A81PCie-tkHJr489WDJCDFseTYS39bAJ0vOGu5li15puEHltgT-m-a7fbOr832fbZ654TT3BBNRlPHM"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-white">hourglass_empty</span>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary text-white p-4 thick-outline rounded-lg flex items-center justify-center gap-3 mechanical-shadow hover:translate-y-1 transition-transform">
+<span class="material-symbols-outlined">factory</span>
+<span class="font-bold uppercase italic">Process to Zine</span>
+</button>
+</div>
+<!-- Zine Preview Strip -->
+<div class="thick-outline bg-slate-900 p-6 rounded-xl flex-grow mechanical-shadow flex flex-col gap-4 overflow-hidden">
+<div class="flex justify-between items-center">
+<h3 class="text-white font-bold uppercase text-xs tracking-widest">Zine Preview Strip</h3>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-retro-green"></div>
+<div class="w-2 h-2 rounded-full bg-retro-green opacity-30"></div>
+<div class="w-2 h-2 rounded-full bg-retro-green opacity-10"></div>
+</div>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-4 snap-x">
+<div class="min-w-[120px] aspect-[3/4] bg-white thick-outline flex-shrink-0 snap-start rotate-2 flex flex-col p-2">
+<div class="bg-slate-200 flex-grow rounded thick-outline overflow-hidden">
+<img class="w-full h-full object-cover grayscale" data-alt="Zine page layout intro" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_DzEAhEqbbLG4PDqy_kZqnpMS0eh5qTabFZ6cZQBO6ktD-xWGg6LPjHkdb1yZ_ORmMWMrzVmokroa3TryUVJXJcKDYINmxY2WLORmZJalpQjORUrt3PAbMEopeRyWdny5nXOuRD1TmeqgbIw_oBSPPnMH7qVKXP0YTTtp4q4YyRqJHgvtEa2GcM0Fi0g3gEJCD9DgbABYY4GU4WsaOw9whVbF8hNnWQvfGjO0_qGnVwBXrDOwkrqL-_5A9WVLgCDG_0I_wNver6Rd"/>
+</div>
+<span class="text-[8px] font-bold mt-2 uppercase">Page 01: Intro</span>
+</div>
+<div class="min-w-[120px] aspect-[3/4] bg-white thick-outline flex-shrink-0 snap-start -rotate-1 flex flex-col p-2">
+<div class="bg-slate-200 flex-grow rounded thick-outline overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Zine page layout market" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6eiUz_l_XZYotHeOfBiolb_uWeEuiZ-3VB9muYzIdnlvzd_NRA9ldvXDJd6d-_IQfG6omWpA9aYNESigM_VX4ER9ASXhSbq48TvVzpk1Voq8RxY7NxhN_Y8UQgT1JSJfYiVJvmgQGfIgojrKCn-ZcZn86FhP1gVMQBf2zuCIlyv_n97OBQIrpUPYx-FRdTqNRwfUtfckNfZzPg-2nOUUY1bzkcjzGzq1wEjox1s6JPW4ei8jcsXeUyyRzf5j3VAV0b0lBNqcFAS6J"/>
+</div>
+<span class="text-[8px] font-bold mt-2 uppercase">Page 02: Market</span>
+</div>
+<div class="min-w-[120px] aspect-[3/4] bg-white thick-outline flex-shrink-0 snap-start rotate-3 flex flex-col p-2">
+<div class="bg-slate-200 flex-grow rounded thick-outline overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Zine page layout sounds" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg7Qf_kG6a9XtUenCeTUUieI_BOFQNk1wStD2YlKUqPc8BiJ_P71i6J-xKv8yNYq1A1zI5HKH62LslH0zgffJekNxxFyd2RDX8yJcStxpQubCyHafWnZ1jxKjbJ7ieHwKJVdrYyP2USvffusP1dxXp4N-cDtvK3O-6q3DQX17BAeP3jWV01h9NjmEOk6A8J4WrWOHVmx7sNkt3EDEs2x04UHv7YI6yFXHMmuWA-FIiz_5eDKwcHVZorzm04HjaydHHLutKgSCKMpjM"/>
+</div>
+<span class="text-[8px] font-bold mt-2 uppercase">Page 03: Sounds</span>
+</div>
+</div>
+<div class="mt-auto bg-slate-800 p-3 rounded thick-outline border-l-8 border-primary">
+<div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mb-2">
+<span>Assembly Line active</span>
+<span>82%</span>
+</div>
+<div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+<div class="w-[82%] h-full bg-primary"></div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</body></html>

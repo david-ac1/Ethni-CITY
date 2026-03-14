@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ethni-CITY | Sonic Pulse</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#9c06f9",
+                        "malachite": "#00cf64",
+                        "terracotta": "#e2725b",
+                        "electric-violet": "#8f00ff",
+                        "background-light": "#fcfaf2",
+                        "background-dark": "#1b0f23",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderWidth: {
+                        '6': '6px',
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>.neo-brutalism-shadow {
+    box-shadow: 8px 8px 0 0 rgba(0, 0, 0, 1)
+    }
+.neo-brutalism-shadow-sm {
+    box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 1)
+    }
+.sticker-logo {
+    filter: drop-shadow(4px 4px 0 white)
+    }
+.grain-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBxzsSdXICD1MzsR2u5W-bpIPVpH325e15NPT4TKVKcYNEHX_e0TNnd6-w_hlBUdKjV7m--P1LfbtL1dOzqqaG4MvBDJjtvTGRxiOz7uqdixbPmPyNfOOGGP4kE6fWrWvVCN7jQ5Vhyrh0qyy0adwW27NoH-vJRktdqiWo7n9cVoNIn6W7MrEA6X7VhbizDGgt-Z8ImcFqxkTjng24CNcjKS5Zz46d8A3XEC8DX0meFJu-ZFn3pXPf06chFuDr628ySlkTNu8nYrhvq)
+    }</style>
+</head>
+<body class="bg-background-light font-display text-slate-900 overflow-x-hidden selection:bg-malachite selection:text-white">
+<div class="min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 px-6 py-4 flex items-center justify-between bg-background-light border-b-6 border-black">
+<div class="flex items-center gap-4">
+<div class="bg-terracotta border-4 border-black p-2 rounded-lg neo-brutalism-shadow-sm rotate-[-2deg]">
+<span class="material-symbols-outlined text-white text-3xl font-bold">graphic_eq</span>
+</div>
+<h2 class="text-3xl font-black tracking-tighter uppercase italic sticker-logo bg-white px-3 py-1 border-4 border-black rounded-xl">Ethni-CITY</h2>
+</div>
+<nav class="hidden md:flex items-center gap-10">
+<a class="text-xl font-bold hover:text-primary underline decoration-4 decoration-malachite underline-offset-4" href="#">Home</a>
+<a class="text-xl font-bold hover:text-primary underline decoration-4 decoration-terracotta underline-offset-4" href="#">Explore</a>
+<a class="text-xl font-bold hover:text-primary underline decoration-4 decoration-electric-violet underline-offset-4" href="#">Community</a>
+</nav>
+<button class="bg-electric-violet text-white border-4 border-black px-6 py-2 font-black text-lg rounded-full neo-brutalism-shadow-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+                CONNECT
+            </button>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 py-20 relative overflow-hidden">
+<!-- Background Decorative Elements -->
+<div class="absolute top-20 left-10 w-32 h-32 bg-malachite border-4 border-black rounded-full neo-brutalism-shadow opacity-20 -z-10 animate-pulse"></div>
+<div class="absolute bottom-40 right-10 w-48 h-48 bg-terracotta border-4 border-black rotate-12 neo-brutalism-shadow opacity-20 -z-10"></div>
+<div class="max-w-4xl w-full flex flex-col items-center gap-12 text-center">
+<!-- Sound Spirit Mascot -->
+<div class="relative group">
+<div class="w-64 h-64 md:w-80 md:h-80 bg-electric-violet border-6 border-black rounded-3xl neo-brutalism-shadow flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform">
+<div class="flex flex-col items-center text-white">
+<span class="material-symbols-outlined text-9xl">art_track</span>
+<div class="flex gap-2 mt-2">
+<span class="material-symbols-outlined text-4xl animate-bounce">surround_sound</span>
+<span class="material-symbols-outlined text-4xl animate-bounce delay-100">music_note</span>
+<span class="material-symbols-outlined text-4xl animate-bounce delay-200">equalizer</span>
+</div>
+</div>
+</div>
+<!-- Speech Bubble -->
+<div class="absolute -top-16 -right-16 md:-right-32 w-64 md:w-80 bg-white border-4 border-black p-6 rounded-3xl neo-brutalism-shadow-sm rotate-[-5deg]">
+<p class="text-xl font-bold leading-tight">"Ready to find the real frequency? Drop your photos to tune in."</p>
+<div class="absolute bottom-[-16px] left-10 w-8 h-8 bg-white border-b-4 border-r-4 border-black rotate-45"></div>
+</div>
+</div>
+<!-- CTA Section -->
+<div class="flex flex-col items-center gap-8 mt-8">
+<button class="group relative flex items-center gap-4 bg-[#ff0000] text-white border-6 border-black px-12 py-6 rounded-2xl neo-brutalism-shadow hover:translate-x-2 hover:translate-y-2 hover:shadow-none transition-all">
+<div class="w-6 h-6 bg-white rounded-full animate-pulse shadow-[0_0_15px_rgba(255,255,255,0.8)]"></div>
+<span class="text-2xl md:text-4xl font-black tracking-widest uppercase">BEGIN YOUR SONIC JOURNEY</span>
+</button>
+<p class="text-slate-600 font-bold uppercase tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined">upload_file</span> Drag &amp; drop assets here
+                    </p>
+</div>
+</div>
+<!-- Sonic Features Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full mt-32 px-4">
+<div class="bg-malachite border-4 border-black p-8 rounded-xl neo-brutalism-shadow hover:-translate-y-2 transition-transform">
+<span class="material-symbols-outlined text-5xl mb-4 text-white">ecg_heart</span>
+<h3 class="text-2xl font-black mb-2 uppercase">Malachite Rhythms</h3>
+<p class="font-bold text-slate-900/80">Deep green grooves harvested from urban forests and concrete echoes.</p>
+</div>
+<div class="bg-terracotta border-4 border-black p-8 rounded-xl neo-brutalism-shadow hover:-translate-y-2 transition-transform rotate-2">
+<span class="material-symbols-outlined text-5xl mb-4 text-white">podcasts</span>
+<h3 class="text-2xl font-black mb-2 uppercase">Terracotta Beats</h3>
+<p class="font-bold text-white">Earth tones meeting digital waves in a collision of ancient and futuristic.</p>
+</div>
+<div class="bg-electric-violet border-4 border-black p-8 rounded-xl neo-brutalism-shadow hover:-translate-y-2 transition-transform -rotate-1">
+<span class="material-symbols-outlined text-5xl mb-4 text-white">bolt</span>
+<h3 class="text-2xl font-black mb-2 uppercase">Electric Freqs</h3>
+<p class="font-bold text-white">High-voltage soundscapes powered by the collective pulse of the city.</p>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="mt-20 border-t-6 border-black bg-[#f2e8d5] grain-texture relative overflow-hidden">
+<div class="max-w-7xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center justify-between gap-10">
+<div class="flex items-center gap-4 group">
+<div class="w-16 h-16 bg-[#b87333] border-4 border-black rounded-lg neo-brutalism-shadow-sm flex items-center justify-center text-white rotate-[-5deg] group-hover:rotate-0 transition-transform">
+<span class="material-symbols-outlined text-4xl">cloud_done</span>
+</div>
+<div class="text-left">
+<h4 class="text-xl font-black uppercase text-[#8b4513]">Hosted on the Global Frequency</h4>
+<p class="font-bold text-[#8b4513]/70">© 2024 Ethni-CITY | Sonic Sovereignty Protocol</p>
+</div>
+</div>
+<div class="flex gap-8 items-center bg-white/50 border-4 border-black p-4 rounded-xl neo-brutalism-shadow-sm">
+<a class="font-black hover:text-terracotta transition-colors" href="#">PRIVACY</a>
+<a class="font-black hover:text-terracotta transition-colors" href="#">TERMS</a>
+<a class="font-black hover:text-terracotta transition-colors" href="#">GCP LOGO</a>
+</div>
+<div class="flex gap-4">
+<div class="w-12 h-12 border-4 border-black rounded-full flex items-center justify-center bg-malachite neo-brutalism-shadow-sm">
+<span class="material-symbols-outlined font-bold">share</span>
+</div>
+<div class="w-12 h-12 border-4 border-black rounded-full flex items-center justify-center bg-electric-violet text-white neo-brutalism-shadow-sm">
+<span class="material-symbols-outlined font-bold">public</span>
+</div>
+</div>
+</div>
+<!-- Vellum Texture Overlay -->
+<div class="absolute inset-0 pointer-events-none opacity-40 grain-texture"></div>
+</footer>
+</div>
+</body></html>
