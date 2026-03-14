@@ -87,10 +87,10 @@ export async function POST(req: NextRequest) {
       
       const enrichedArtists = await Promise.all(
         artistData.artists.map(async (artist: any) => {
-          const spotifyTrack = await searchArtistTrack(artist.name, artist.recommended_song || "");
+          const spotifyTracks = await searchArtistTrack(artist.name, artist.recommended_song || "");
           return {
             ...artist,
-            spotify_track: spotifyTrack,
+            spotify_tracks: spotifyTracks,
           };
         })
       );

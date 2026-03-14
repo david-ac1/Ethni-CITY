@@ -28,12 +28,12 @@ export interface ArtistData {
   spotify_search: string;
   youtube_search: string;
   streaming_likelihood: string;
-  spotify_track?: {
+  spotify_tracks?: {
     trackName: string;
     previewUrl: string | null;
     albumArtUrl: string | null;
     spotifyUrl: string;
-  };
+  }[];
 }
 
 export interface ZineData {

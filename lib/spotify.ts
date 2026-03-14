@@ -46,68 +46,89 @@ export interface SpotifyTrackData {
 }
 
 /**
- * Searches Spotify for a specific track by an artist
+ * Searches Spotify for a specific track by an artist, but returns up to 5 tracks in total.
+ * The specific recommended track (if found) will be the first item, followed by their other top tracks.
  */
 export async function searchArtistTrack(
   artistName: string,
   trackName: string
-): Promise<SpotifyTrackData | null> {
+): Promise<SpotifyTrackData[]> {
   const token = await getSpotifyAccessToken();
-  if (!token) return null;
+  if (!token) return [];
+
+  const results: SpotifyTrackData[] = [];
+  const seenTrackIds = new Set<string>();
 
   try {
-    // Search explicitly for track and artist together first
-    const query = `track:${trackName} artist:${artistName}`;
-    const searchRes = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-
-    let track = null;
-    if (searchRes.ok) {
-      const searchData = await searchRes.json();
-      track = searchData.tracks?.items?.[0];
-    }
-
-    // Fallback: If the exact track isn't found, search just the artist and grab their top track
-    if (!track) {
-      console.log(`Could not find specific track "${trackName}" for "${artistName}". Falling back to artist search.`);
-      const artistRes = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(artistName)}&type=artist&limit=1`,
+    // 1. First, try to find the specific track explicitly
+    let specificTrack = null;
+    if (trackName) {
+      const query = `track:${trackName} artist:${artistName}`;
+      const searchRes = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      if (artistRes.ok) {
-        const artistData = await artistRes.json();
-        const artistId = artistData.artists?.items?.[0]?.id;
+
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        specificTrack = searchData.tracks?.items?.[0];
         
-        if (artistId) {
-          const topTracksRes = await fetch(
-            `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          if (topTracksRes.ok) {
-            const topTracksData = await topTracksRes.json();
-            // Try to find ANY track with an audio preview so our mockups look good
-            track = topTracksData.tracks?.find((t: any) => t.preview_url) || topTracksData.tracks?.[0];
+        if (specificTrack) {
+          results.push({
+            trackName: specificTrack.name,
+            previewUrl: specificTrack.preview_url,
+            albumArtUrl: specificTrack.album?.images?.[0]?.url || null,
+            spotifyUrl: specificTrack.external_urls?.spotify || "",
+          });
+          seenTrackIds.add(specificTrack.id);
+        }
+      }
+    }
+
+    // 2. Regardless of finding the specific track, fetch the artist's general top tracks
+    console.log(`Fetching general top tracks for "${artistName}" to fill out the roster...`);
+    const artistRes = await fetch(
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(artistName)}&type=artist&limit=1`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    
+    if (artistRes.ok) {
+      const artistData = await artistRes.json();
+      const artistId = artistData.artists?.items?.[0]?.id;
+      
+      if (artistId) {
+        const topTracksRes = await fetch(
+          `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (topTracksRes.ok) {
+          const topTracksData = await topTracksRes.json();
+          const tracksData = topTracksData.tracks || [];
+          
+          for (const track of tracksData) {
+            // Stop once we have 5 tracks
+            if (results.length >= 5) break;
+            
+            // Deduplicate (don't add the recommended track twice)
+            if (!seenTrackIds.has(track.id)) {
+              results.push({
+                trackName: track.name,
+                previewUrl: track.preview_url,
+                albumArtUrl: track.album?.images?.[0]?.url || null,
+                spotifyUrl: track.external_urls?.spotify || "",
+              });
+              seenTrackIds.add(track.id);
+            }
           }
         }
       }
     }
 
-    if (!track) return null;
-
-    return {
-      trackName: track.name,
-      previewUrl: track.preview_url,
-      albumArtUrl: track.album?.images?.[0]?.url || null,
-      spotifyUrl: track.external_urls?.spotify || "",
-    };
+    return results;
   } catch (error) {
-    console.error(`Error fetching Spotify track ${trackName} for ${artistName}:`, error);
-    return null;
+    console.error(`Error fetching Spotify tracks for ${artistName}:`, error);
+    return results;
   }
 }
 

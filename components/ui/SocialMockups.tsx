@@ -10,7 +10,8 @@ interface SocialMockupsProps {
 
 export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps) {
   const [activeTab, setActiveTab] = useState<"tiktok" | "instagram">("tiktok");
-  const track = zine.meta.featured_artist.spotify_track;
+  // Default to empty array if undefined
+  const trackList = zine.meta.featured_artist.spotify_tracks || [];
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
@@ -34,26 +35,67 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
         </button>
       </div>
 
-      <div className="flex justify-center mt-4">
-        {activeTab === "tiktok" ? (
-          <TikTokMockup zine={zine} heroImageUrl={heroImageUrl} track={track} />
-        ) : (
-          <InstagramMockup zine={zine} heroImageUrl={heroImageUrl} track={track} />
+      <div className="flex flex-col lg:flex-row gap-8 justify-center items-start mt-4">
+        {/* Phone Mockup Area */}
+        <div className="flex-shrink-0">
+          {activeTab === "tiktok" ? (
+            <TikTokMockup zine={zine} heroImageUrl={heroImageUrl} primaryTrack={trackList[0]} />
+          ) : (
+            <InstagramMockup zine={zine} heroImageUrl={heroImageUrl} primaryTrack={trackList[0]} />
+          )}
+        </div>
+
+        {/* Playable Tracklist sidebar */}
+        {trackList.length > 0 && (
+          <div className="flex flex-col gap-3 w-full max-w-sm">
+            <h3 className="font-black uppercase tracking-widest text-xs text-slate-400 mb-2 border-b border-slate-200 pb-2">
+              🎵 Found on Spotify: {zine.meta.featured_artist.name}
+            </h3>
+            {trackList.map((track, i) => (
+              <div key={i} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 transition-colors">
+                 {track.albumArtUrl ? (
+                  <img src={track.albumArtUrl} alt="" className="w-12 h-12 rounded shadow-sm object-cover" />
+                ) : (
+                  <div className="w-12 h-12 bg-[#1DB954] text-white flex items-center justify-center rounded shadow-sm">
+                    <span className="material-symbols-outlined text-xl">music_note</span>
+                  </div>
+                )}
+                <div className="flex flex-col min-w-0 flex-grow">
+                  <span className="text-sm font-bold text-black truncate">{track.trackName}</span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest truncate">{i === 0 ? 'Featured Track' : 'Top Track'}</span>
+                </div>
+                {track.previewUrl ? (
+                  <audio controls src={track.previewUrl} className="h-8 w-[100px] border border-slate-200 rounded-full bg-slate-50" />
+                ) : (
+                  <a href={track.spotifyUrl} target="_blank" rel="noopener noreferrer" className="size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-[#1DB954] transition-colors">
+                     <span className="material-symbols-outlined text-lg">open_in_new</span>
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        {trackList.length === 0 && (
+          <div className="w-full max-w-sm p-6 border-2 border-dashed border-slate-200 rounded-xl text-center">
+             <span className="material-symbols-outlined text-slate-300 text-4xl mb-2 block">music_off</span>
+             <p className="text-sm font-bold text-slate-500 uppercase">No Spotify Tracks Found</p>
+             <p className="text-xs text-slate-400 mt-1">This artist might be too underground or not streaming their music.</p>
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function TikTokMockup({ zine, heroImageUrl, track }: any) {
+function TikTokMockup({ zine, heroImageUrl, primaryTrack }: any) {
   return (
     <div className="relative w-[340px] h-[720px] bg-black rounded-[2.5rem] border-[12px] border-slate-900 overflow-hidden shadow-2xl flex-shrink-0">
       {/* Safe Area Notch */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-50" />
 
       {/* Video Content / Photo */}
-      <div className="absolute inset-0">
-        <img src={heroImageUrl} alt="" className="w-full h-full object-cover opacity-80" />
+      <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+        <img src={heroImageUrl} alt="" className="min-w-full min-h-full object-cover opacity-80" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90" />
       </div>
 
@@ -103,12 +145,12 @@ function TikTokMockup({ zine, heroImageUrl, track }: any) {
         <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20">
           <span className="material-symbols-outlined text-sm animate-pulse">music_note</span>
           <span className="text-xs font-bold truncate max-w-[150px]">
-            {track?.trackName || `${zine.meta.featured_artist.name} - Original Sound`}
+            {primaryTrack?.trackName || `${zine.meta.featured_artist.name} - Original Sound`}
           </span>
         </div>
         <div className="w-10 h-10 rounded-full animate-spin bg-black border-4 border-[#252525] flex items-center justify-center" style={{ animationDuration: '3s' }}>
-          {track?.albumArtUrl ? (
-            <img src={track.albumArtUrl} alt="" className="w-4 h-4 rounded-full object-cover" />
+          {primaryTrack?.albumArtUrl ? (
+            <img src={primaryTrack.albumArtUrl} alt="" className="w-4 h-4 rounded-full object-cover" />
           ) : (
             <div className="w-4 h-4 bg-primary rounded-full" />
           )}
@@ -118,7 +160,7 @@ function TikTokMockup({ zine, heroImageUrl, track }: any) {
   );
 }
 
-function InstagramMockup({ zine, heroImageUrl, track }: any) {
+function InstagramMockup({ zine, heroImageUrl, primaryTrack }: any) {
   return (
     <div className="relative w-[400px] bg-white border border-slate-200 shadow-xl flex-shrink-0">
       {/* Header */}
@@ -129,7 +171,7 @@ function InstagramMockup({ zine, heroImageUrl, track }: any) {
           </div>
           <div>
             <p className="font-bold text-sm leading-tight text-black">ethni_city</p>
-            {track && (
+            {primaryTrack && (
               <p className="text-[10px] text-slate-500 flex items-center gap-1">
                 {zine.meta.location.city}, {zine.meta.location.country}
               </p>
@@ -140,8 +182,8 @@ function InstagramMockup({ zine, heroImageUrl, track }: any) {
       </div>
 
       {/* Media */}
-      <div className="w-full aspect-square relative">
-        <img src={heroImageUrl} alt="" className="w-full h-full object-cover" />
+      <div className="w-full aspect-square relative overflow-hidden">
+        <img src={heroImageUrl} alt="" className="min-w-full min-h-full object-cover" />
         
         {/* Tag popup */}
         <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1">
@@ -168,20 +210,19 @@ function InstagramMockup({ zine, heroImageUrl, track }: any) {
           {zine.share_caption}
         </p>
         
-        {track && (
+        {primaryTrack && (
           <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition-colors">
-            {track.albumArtUrl ? (
-              <img src={track.albumArtUrl} alt="" className="w-10 h-10 rounded shadow-sm object-cover" />
+            {primaryTrack.albumArtUrl ? (
+              <img src={primaryTrack.albumArtUrl} alt="" className="w-10 h-10 rounded shadow-sm object-cover" />
             ) : (
               <div className="w-10 h-10 bg-[#1DB954] text-white flex items-center justify-center rounded shadow-sm">
                 <span className="material-symbols-outlined text-lg">music_note</span>
               </div>
             )}
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-black truncate">{track.trackName}</span>
+              <span className="text-xs font-bold text-black truncate">{primaryTrack.trackName}</span>
               <span className="text-[10px] text-slate-500 truncate">{zine.meta.featured_artist.name}</span>
             </div>
-            <span className="material-symbols-outlined text-slate-400 ml-auto">play_circle</span>
           </div>
         )}
         
