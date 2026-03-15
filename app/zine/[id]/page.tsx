@@ -24,11 +24,26 @@ const FALLBACK_ZINE: Partial<ZineData> = {
 
 export default function ZinePage({ params }: ZinePageProps) {
   const [zineId, setZineId] = useState<string>("");
+  const [isDjPlaying, setIsDjPlaying] = useState(false);
   const { currentZine, discoveredArtists } = useEthniStore();
 
   useEffect(() => {
     params.then((p) => setZineId(p.id));
   }, [params]);
+
+  const toggleDjVoice = () => {
+    if (isDjPlaying) {
+      window.speechSynthesis.cancel();
+      setIsDjPlaying(false);
+    } else {
+      const utterance = new SpeechSynthesisUtterance(displayData.dj_narration_script);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.1;
+      utterance.onend = () => setIsDjPlaying(false);
+      window.speechSynthesis.speak(utterance);
+      setIsDjPlaying(true);
+    }
+  };
 
   // Use real generated data if available, otherwise fall back to mock
   const zine = currentZine || null;
@@ -40,6 +55,7 @@ export default function ZinePage({ params }: ZinePageProps) {
     artist_bio_paragraph: zine?.artist_bio_paragraph || FALLBACK_ZINE.artist_bio_paragraph || "",
     location_lore: zine?.location_lore || FALLBACK_ZINE.location_lore || "",
     share_caption: zine?.share_caption || FALLBACK_ZINE.share_caption || "",
+    dj_narration_script: zine?.dj_narration_script || "Welcome back to Ethni-CITY Radio. We're looking at a stunning piece of cultural history here.",
     photo_url: zine?.meta?.photo_url || "",
     location: zine?.meta?.location || { city: "Lagos", country: "Nigeria", neighbourhood: "Balogun Market" },
     artist: zine?.meta?.featured_artist || discoveredArtists[0] || { name: "ILÊ AIYÊ", genre: "Afro-Brazilian Neo-Pop", spotify_search: "Ilê Aiyê", youtube_search: "Ilê Aiyê music" },
@@ -199,8 +215,23 @@ export default function ZinePage({ params }: ZinePageProps) {
 
         {/* Content Strips */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <button 
+            onClick={toggleDjVoice}
+            className={`p-6 rounded-xl neo-brutalism-shadow-sm transition-all text-left ${isDjPlaying ? 'scale-95 translate-x-1 translate-y-1 shadow-none' : 'hover:-translate-y-1'}`} 
+            style={{ backgroundColor: "#9c06f9", border: "4px solid #1b0f23" }}
+          >
+            <span className={`material-symbols-outlined text-4xl mb-3 block text-white ${isDjPlaying ? 'animate-pulse' : ''}`}>
+              {isDjPlaying ? "graphic_eq" : "record_voice_over"}
+            </span>
+            <h4 className="font-black text-lg uppercase mb-2 text-white">
+              {isDjPlaying ? "DJ is Speaking..." : "Hear the DJ"}
+            </h4>
+            <p className="font-bold text-sm text-white opacity-85">
+              {isDjPlaying ? "Agentic DJ is providing live cultural context. Tap to interrupt." : "The agentic DJ has spoken. Hear the full cultural context voiced by Gemini."}
+            </p>
+          </button>
+
           {[
-            { icon: "record_voice_over", label: "AI Narration", desc: "The agentic DJ has spoken. Hear the full cultural context voiced by Gemini Live.", bg: "#9c06f9", textColor: "white" },
             { icon: "travel_explore", label: "Cultural Markers", desc: displayData.location_lore || "Yoruba textile patterns, kente-adjacent colour principles, Lagos vernacular architecture.", bg: "#fdf6e3", textColor: "#1b0f23", border: true },
             { icon: "share", label: "Share & Credit", desc: displayData.share_caption || "Every share credits this artist directly. Ethical visibility for niche artists.", bg: "#00cf64", textColor: "#1b0f23" },
           ].map(({ icon, label, desc, bg, textColor, border }) => (

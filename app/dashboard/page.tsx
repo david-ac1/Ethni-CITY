@@ -102,6 +102,10 @@ export default function DashboardPage() {
     setActiveLocation,
     setAgentStatus,
     setDiscoveredArtists,
+    setUserVibe,
+    setInteractionState,
+    interactionState,
+    userVibe,
     setIsGeneratingZine,
     setCurrentZine,
   } = useEthniStore();
@@ -141,39 +145,65 @@ export default function DashboardPage() {
       // Update store + terminal
       updateTrip(id, { status: "processed", analysis });
       setActiveLocation(`${analysis.neighbourhood}, ${analysis.city.toUpperCase()}, ${analysis.country.toUpperCase()}`, analysis.coordinates);
-      setAgentStatus(`📍 Detected: ${analysis.neighbourhood}, ${analysis.city}. Flying the Sonic Zoom...`);
+      setAgentStatus(`📍 Detected: ${analysis.neighbourhood}, ${analysis.city}. Destination locked.`);
+      setInteractionState("awaiting_vibe");
+      setProcessingTripId(id);
 
       // Step 2: Fly CesiumMap to location
       if (analysis.coordinates.lat !== 0 && mapRef.current) {
         mapRef.current.flyTo(analysis.coordinates.lat, analysis.coordinates.lng, 1200);
       }
 
-      // Step 3: Discover artists
-      setAgentStatus(`🎵 Hunting for niche local artists in ${analysis.city}...`);
+    } catch (err) {
+      console.error("Processing error:", err);
+      updateTrip(id, { status: "error" });
+      setAgentStatus(`⚠️ Something went wrong. Try another photo.`);
+    }
+  }, [trips.length, addTrip, updateTrip, setActiveLocation, setAgentStatus, setInteractionState]);
+
+  // --- Map Interaction ---
+  const handleMapChange = useCallback((lat: number, lng: number) => {
+    setActiveLocation("User Custom Location", { lat, lng });
+    if (interactionState === "ready") {
+      setInteractionState("awaiting_vibe"); // Re-open the DJ panel if they move the pin
+      setAgentStatus("📍 Location refined. Want to update the vibe too?");
+    }
+  }, [setActiveLocation, interactionState, setInteractionState, setAgentStatus]);
+
+  // --- Artist Discovery (Triggered by DJ Vibe) ---
+  const handleDiscoverArtists = useCallback(async () => {
+    const activeTrip = trips.find((t) => t.id === processingTripId);
+    if (!activeTrip?.analysis) return;
+
+    setInteractionState("curating");
+    setAgentStatus(`🎵 DJ is curating ${userVibe || "the local sound"} for you...`);
+
+    try {
       const artistRes = await fetch("/api/find-artists", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          city: analysis.city,
-          country: analysis.country,
-          neighbourhood: analysis.neighbourhood,
-          cultural_markers: analysis.cultural_markers,
-          vibe_descriptors: analysis.vibe_descriptors,
+          city: activeTrip.analysis.city,
+          country: activeTrip.analysis.country,
+          neighbourhood: activeTrip.analysis.neighbourhood,
+          cultural_markers: activeTrip.analysis.cultural_markers,
+          vibe_descriptors: activeTrip.analysis.vibe_descriptors,
+          userVibe: userVibe,
         }),
       });
       if (!artistRes.ok) throw new Error("Artist discovery failed");
       const artistData = await artistRes.json();
 
       setDiscoveredArtists(artistData.artists || [], artistData.location_music_context || "", artistData.zine_hook || "");
-      setAgentStatus(`🎧 Found ${artistData.artists?.length || 0} niche artists! Ready to generate your Zine.`);
-      setProcessingTripId(id);
+      setAgentStatus(`🎧 Vibe set! Found ${artistData.artists?.length || 0} artists. Ready to generate your Zine.`);
+      setInteractionState("ready");
 
     } catch (err) {
-      console.error("Processing error:", err);
-      updateTrip(id, { status: "error" });
-      setAgentStatus(`⚠️ Something went wrong. Try another photo or check your API key.`);
+      console.error("Discovery error:", err);
+      setAgentStatus(`⚠️ DJ hit a snag. Try spinning back or adjusting the vibe.`);
+      setInteractionState("awaiting_vibe");
     }
-  }, [trips.length, addTrip, updateTrip, setActiveLocation, setAgentStatus, setDiscoveredArtists]);
+  }, [trips, processingTripId, userVibe, setAgentStatus, setDiscoveredArtists, setInteractionState]);
 
   // --- Zine Generation ---
   const handleGenerateZine = useCallback(async () => {
@@ -289,7 +319,54 @@ export default function DashboardPage() {
           </div>
 
           {/* Discovered Artists Panel */}
-          {discoveredArtists.length > 0 && (
+          {interactionState === "awaiting_vibe" && (
+            <div className="thick-outline p-6 rounded-xl mechanical-shadow flex flex-col gap-4 bg-white border-t-8" style={{ borderTopColor: "#9c06f9" }}>
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#9c06f9] animate-pulse">record_voice_over</span>
+                <p className="font-black text-xs uppercase tracking-widest text-[#9c06f9]">Agentic DJ Interaction</p>
+              </div>
+              <p className="text-sm font-bold leading-tight">"I'm locked on ${activeLocation.split(',')[1]?.trim() || 'the spot'}. What's the energy/vibe for this post, DJ?"</p>
+              
+              <div className="relative">
+                <input 
+                  type="text"
+                  placeholder="e.g. Dark & Moody, Summer Night, High Energy..."
+                  className="w-full p-3 thick-outline rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#9c06f9]"
+                  value={userVibe}
+                  onChange={(e) => setUserVibe(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleDiscoverArtists()}
+                />
+              </div>
+
+              <div className="flex gap-2">
+                {["Chill", "Upbeat", "Dark", "Nostalgic"].map((v) => (
+                  <button 
+                    key={v}
+                    onClick={() => { setUserVibe(v); }}
+                    className="px-2 py-1 text-[10px] font-black uppercase border-2 border-black rounded hover:bg-[#9c06f9] hover:text-white transition-colors"
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+
+              <button 
+                onClick={handleDiscoverArtists}
+                className="w-full bg-[#9c06f9] text-white p-3 thick-outline rounded-lg font-black uppercase italic mechanical-shadow hover:translate-y-1 hover:shadow-none transition-all"
+              >
+                Set the Vibe
+              </button>
+            </div>
+          )}
+
+          {interactionState === "curating" && (
+            <div className="thick-outline p-6 rounded-xl mechanical-shadow flex flex-col items-center gap-4 bg-white">
+              <div className="w-12 h-12 border-4 border-[#9c06f9] border-t-transparent rounded-full animate-spin" />
+              <p className="font-black text-xs uppercase tracking-widest text-center">DJ is spinning the crates...</p>
+            </div>
+          )}
+
+          {discoveredArtists.length > 0 && interactionState === "ready" && (
             <div className="thick-outline p-4 rounded-xl mechanical-shadow flex flex-col gap-3" style={{ backgroundColor: "#2d1f3d" }}>
               <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: "#9c06f9" }}>🎧 Artists Discovered</p>
               {discoveredArtists.map((artist, i) => (
@@ -353,7 +430,7 @@ export default function DashboardPage() {
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
           >
-            <CesiumMap ref={mapRef} className="w-full h-full" />
+            <CesiumMap ref={mapRef} onLocationChange={handleMapChange} className="w-full h-full" />
 
             {/* Drag overlay */}
             {isDragging && (

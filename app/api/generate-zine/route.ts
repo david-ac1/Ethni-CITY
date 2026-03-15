@@ -53,6 +53,7 @@ Your task: Generate the editorial copy for a Sonic Story-Zine spread. Return ONL
   "artist_bio_paragraph": "string — 60-80 words. Written in first person plural as if the magazine is introducing the artist to the world. Mention ${featured_artist.name} by name. Warm, authoritative editorial voice.",
   "location_lore": "string — 30-40 words about the specific musical history of ${location.neighbourhood}, ${location.city}",
   "share_caption": "string — 20-30 word Instagram-ready caption with 3 relevant hashtags that credit the artist",
+  "dj_narration_script": "string — A 30-40 word radio-style intro script. Start with something like 'Welcome back to Ethni-CITY Radio...'. Mention the vibe and the artist.",
   "zine_id": "string — URL-safe ID like '${location.city.toLowerCase().replace(/\s+/g, '-')}-${featured_artist.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}-01'"
 }`;
 

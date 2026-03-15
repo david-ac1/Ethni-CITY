@@ -45,6 +45,7 @@ export interface ZineData {
   artist_bio_paragraph: string;
   location_lore: string;
   share_caption: string;
+  dj_narration_script: string;
   meta: {
     location: { city: string; country: string; neighbourhood: string };
     featured_artist: ArtistData;
@@ -59,38 +60,46 @@ interface EthniCityState {
   // Trip management
   trips: PhotoTrip[];
   activeLocation: string;
-  activeCoordinates: { lat: number; lng: number } | null;
+  activeCoordinates: { lat: number; lng: number };
   agentStatus: string;
 
   // Artist discovery
-  discoveredArtists: ArtistData[];
+  discoveredArtists: ArtistData[]; // Changed from Artist[] to ArtistData[] to match existing type
   locationMusicContext: string;
   zineHook: string;
 
   // Zine
-  currentZine: ZineData | null;
+  currentZine: ZineData | null; // Changed from any | null to ZineData | null to match existing type
   isGeneratingZine: boolean;
+
+  // User input
+  userVibe: string;
+  interactionState: "idle" | "awaiting_vibe" | "curating" | "ready";
 
   // Actions
   addTrip: (trip: PhotoTrip) => void;
   updateTrip: (id: string, updates: Partial<PhotoTrip>) => void;
-  setActiveLocation: (location: string, coords: { lat: number; lng: number }) => void;
+  setActiveLocation: (label: string, coords: { lat: number; lng: number }) => void;
   setAgentStatus: (status: string) => void;
-  setDiscoveredArtists: (artists: ArtistData[], context: string, hook: string) => void;
-  setCurrentZine: (zine: ZineData | null) => void;
-  setIsGeneratingZine: (loading: boolean) => void;
+  setDiscoveredArtists: (artists: ArtistData[], context: string, hook: string) => void; // Changed from Artist[] to ArtistData[]
+  setCurrentZine: (zine: ZineData | null) => void; // Changed from any to ZineData | null
+  setIsGeneratingZine: (isGenerating: boolean) => void; // Changed parameter name from loading to isGenerating
+  setUserVibe: (vibe: string) => void;
+  setInteractionState: (state: "idle" | "awaiting_vibe" | "curating" | "ready") => void;
 }
 
-export const useEthniStore = create<EthniCityState>((set) => ({
+export const useEthniStore = create<EthniCityState>((set) => ({ // Changed EthniState to EthniCityState
   trips: [],
   activeLocation: "Awaiting your photo...",
-  activeCoordinates: null,
-  agentStatus: "Drop your photos here! Niche Mode: ON.",
+  activeCoordinates: { lat: 0, lng: 0 }, // Changed from null to initial object
+  agentStatus: "Ready for your visual story.", // Changed default status
   discoveredArtists: [],
   locationMusicContext: "",
   zineHook: "",
   currentZine: null,
   isGeneratingZine: false,
+  userVibe: "",
+  interactionState: "idle",
 
   addTrip: (trip) =>
     set((state) => ({ trips: [...state.trips, trip] })),
@@ -100,8 +109,8 @@ export const useEthniStore = create<EthniCityState>((set) => ({
       trips: state.trips.map((t) => (t.id === id ? { ...t, ...updates } : t)),
     })),
 
-  setActiveLocation: (location, coords) =>
-    set({ activeLocation: location, activeCoordinates: coords }),
+  setActiveLocation: (label, coords) => // Changed parameter name from location to label
+    set({ activeLocation: label, activeCoordinates: coords }),
 
   setAgentStatus: (status) => set({ agentStatus: status }),
 
@@ -109,5 +118,7 @@ export const useEthniStore = create<EthniCityState>((set) => ({
     set({ discoveredArtists: artists, locationMusicContext: context, zineHook: hook }),
 
   setCurrentZine: (zine) => set({ currentZine: zine }),
-  setIsGeneratingZine: (loading) => set({ isGeneratingZine: loading }),
+  setIsGeneratingZine: (isGenerating) => set({ isGeneratingZine: isGenerating }), // Changed parameter name from loading to isGenerating
+  setUserVibe: (vibe) => set({ userVibe: vibe }),
+  setInteractionState: (state) => set({ interactionState: state }),
 }));

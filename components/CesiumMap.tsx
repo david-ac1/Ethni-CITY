@@ -8,30 +8,40 @@ export interface CesiumMapHandle {
 
 interface CesiumMapProps {
   className?: string;
+  onLocationChange?: (lat: number, lng: number) => void;
 }
 
 // Dynamic cesium import — only runs in browser
 let Cesium: typeof import("cesium") | null = null;
 
 const CesiumMap = forwardRef<CesiumMapHandle, CesiumMapProps>(function CesiumMap(
-  { className },
+  { className, onLocationChange },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<import("cesium").Viewer | null>(null);
+  const pinEntityRef = useRef<import("cesium").Entity | null>(null);
 
   useImperativeHandle(ref, () => ({
     flyTo: (lat: number, lng: number, altitude = 800) => {
       if (!viewerRef.current || !Cesium) return;
+      
+      const destination = Cesium.Cartesian3.fromDegrees(lng, lat, altitude);
+      
+      // Update pin position when flying
+      if (pinEntityRef.current) {
+        pinEntityRef.current.position = Cesium.Cartesian3.fromDegrees(lng, lat) as any;
+      }
+
       viewerRef.current.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(lng, lat, altitude),
+        destination,
         orientation: {
-          heading: Cesium.Math.toRadians(0),
-          pitch: Cesium.Math.toRadians(-45),
+          heading: Cesium.Math.toRadians(15), // Slight tilt for dynamism
+          pitch: Cesium.Math.toRadians(-35), // More panoramic view
           roll: 0,
         },
-        duration: 3.5,
-        easingFunction: Cesium.EasingFunction.QUARTIC_IN_OUT,
+        duration: 5.5, // Even more cinematic
+        easingFunction: Cesium.EasingFunction.HERMITE_OUT, // Smoother finish
       });
     },
   }));
@@ -42,22 +52,18 @@ const CesiumMap = forwardRef<CesiumMapHandle, CesiumMapProps>(function CesiumMap
     async function initCesium() {
       if (!containerRef.current || viewerRef.current) return;
 
-      // Dynamically import cesium only in browser
       const cesiumModule = await import("cesium");
       // @ts-expect-error - Cesium CSS doesn't have type declarations
       await import("cesium/Build/Cesium/Widgets/widgets.css");
       
-      // Tell Cesium where to find its static assets (copied via copy-webpack-plugin)
       window.CESIUM_BASE_URL = '/cesium/';
       cesiumModule.buildModuleUrl.setBaseUrl('/cesium/');
       
       Cesium = cesiumModule;
 
-      cesiumModule.Ion.defaultAccessToken =
-        process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN || "";
+      cesiumModule.Ion.defaultAccessToken = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN || "";
 
       viewer = new cesiumModule.Viewer(containerRef.current, {
-        // Use Google Maps 3D Photorealistic Tiles
         terrainProvider: undefined,
         baseLayerPicker: false,
         navigationHelpButton: false,
@@ -78,9 +84,41 @@ const CesiumMap = forwardRef<CesiumMapHandle, CesiumMapProps>(function CesiumMap
           const tileset = await cesiumModule.createGooglePhotorealistic3DTileset({});
           viewer.scene.primitives.add(tileset);
         } catch {
-          console.log("Google 3D tiles unavailable — using default terrain");
+          console.log("Google 3D tiles unavailable");
         }
       }
+
+      // Add Interactive Pin
+      const pinBuilder = new cesiumModule.PinBuilder();
+      const pinEntity = viewer.entities.add({
+        id: "active-location-pin",
+        name: "Sonic Target",
+        position: cesiumModule.Cartesian3.fromDegrees(20, 5), // Initial
+        billboard: {
+          image: pinBuilder.fromColor(cesiumModule.Color.fromCssColorString("#9c06f9"), 48).toDataURL(),
+          verticalOrigin: cesiumModule.VerticalOrigin.BOTTOM,
+          heightReference: cesiumModule.HeightReference.RELATIVE_TO_GROUND,
+        },
+      });
+      pinEntityRef.current = pinEntity;
+
+      // Handle Map Clicks to move the pin
+      const handler = new cesiumModule.ScreenSpaceEventHandler(viewer.scene.canvas);
+      handler.setInputAction((movement: any) => {
+        if (!Cesium || !viewer) return;
+        const cartesian = viewer.scene.pickPosition(movement.position);
+        if (Cesium.defined(cartesian)) {
+          const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+          const lng = Cesium.Math.toDegrees(cartographic.longitude);
+          const lat = Cesium.Math.toDegrees(cartographic.latitude);
+          
+          // Move pin visually
+          pinEntity.position = cartesian as any;
+          
+          // Notify parent
+          if (onLocationChange) onLocationChange(lat, lng);
+        }
+      }, cesiumModule.ScreenSpaceEventType.LEFT_CLICK);
 
       // Start over a compelling global view
       viewer.camera.setView({
@@ -107,7 +145,7 @@ const CesiumMap = forwardRef<CesiumMapHandle, CesiumMapProps>(function CesiumMap
         viewerRef.current = null;
       }
     };
-  }, []);
+  }, [onLocationChange]);
 
   return (
     <div

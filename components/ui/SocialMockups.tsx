@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { ZineData } from "@/lib/store";
+import { toPng } from "html-to-image";
 
 interface SocialMockupsProps {
   zine: ZineData;
@@ -11,9 +12,31 @@ interface SocialMockupsProps {
 export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps) {
   const [activeTab, setActiveTab] = useState<"tiktok" | "instagram">("tiktok");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const mockupRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const allArtists = zine.meta.all_artists || [];
   
+  const handleDownload = useCallback(async () => {
+    if (!mockupRef.current) return;
+    
+    try {
+      const dataUrl = await toPng(mockupRef.current, { 
+        cacheBust: true,
+        backgroundColor: activeTab === "instagram" ? "#ffffff" : "#000000",
+        // Ensure styles are captured correctly
+        style: {
+          borderRadius: '0'
+        }
+      });
+      const link = document.createElement("a");
+      link.download = `ethni-city-zine-${activeTab}-${Date.now()}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Export failed:", err);
+    }
+  }, [activeTab]);
+
   const togglePlay = (trackUrl: string) => {
     if (playingId === trackUrl) {
       audioRef.current?.pause();
@@ -65,24 +88,35 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
 
       <div className="flex flex-col lg:flex-row gap-8 justify-center items-start mt-4">
         {/* Phone Mockup Area */}
-        <div className="flex-shrink-0">
-          {activeTab === "tiktok" ? (
-            <TikTokMockup 
-              zine={zine} 
-              heroImageUrl={heroImageUrl} 
-              primaryTrack={currentTrack} 
-              isPlaying={!!playingId} 
-              artistName={currentArtistName}
-            />
-          ) : (
-            <InstagramMockup 
-              zine={zine} 
-              heroImageUrl={heroImageUrl} 
-              primaryTrack={currentTrack} 
-              artistName={currentArtistName}
-              isPlaying={!!playingId}
-            />
-          )}
+        <div className="flex flex-col items-center gap-6">
+          <div ref={mockupRef}>
+            {activeTab === "tiktok" ? (
+              <TikTokMockup 
+                zine={zine} 
+                heroImageUrl={heroImageUrl} 
+                primaryTrack={currentTrack} 
+                isPlaying={!!playingId} 
+                artistName={currentArtistName}
+              />
+            ) : (
+              <InstagramMockup 
+                zine={zine} 
+                heroImageUrl={heroImageUrl} 
+                primaryTrack={currentTrack} 
+                artistName={currentArtistName}
+                isPlaying={!!playingId}
+              />
+            )}
+          </div>
+          
+          <button 
+            onClick={handleDownload}
+            className="flex items-center gap-3 border-4 border-black px-8 py-4 rounded-xl font-black uppercase neo-brutalism-shadow-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+            style={{ backgroundColor: activeTab === "tiktok" ? "#9c06f9" : "#e2725b", color: 'white' }}
+          >
+            <span className="material-symbols-outlined">download</span>
+            Save to Camera Roll
+          </button>
         </div>
 
         {/* Playable Tracklist sidebar */}
@@ -143,13 +177,6 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
             )})}
           </div>
         )}
-        {allArtists.length === 0 && (
-          <div className="w-full max-w-sm p-6 border-2 border-dashed border-slate-200 rounded-xl text-center">
-             <span className="material-symbols-outlined text-slate-300 text-4xl mb-2 block">music_off</span>
-             <p className="text-sm font-bold text-slate-500 uppercase">No Spotify Tracks Found</p>
-             <p className="text-xs text-slate-400 mt-1">These artists might be too underground or not streaming their music.</p>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -158,16 +185,11 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
 function TikTokMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }: any) {
   return (
     <div className="relative w-[340px] h-[720px] bg-black rounded-[2.5rem] border-[12px] border-slate-900 overflow-hidden shadow-2xl flex-shrink-0">
-      {/* Safe Area Notch */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-50" />
-
-      {/* Video Content / Photo */}
       <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
         <img src={heroImageUrl} alt="" className="min-w-full min-h-full object-cover opacity-80" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90" />
       </div>
-
-      {/* Top UI */}
       <div className="absolute top-10 left-4 right-4 flex justify-between items-center text-white z-20 opacity-90">
         <span className="material-symbols-outlined shadow-black drop-shadow-md">search</span>
         <div className="flex gap-4 font-bold text-sm drop-shadow-md">
@@ -176,13 +198,11 @@ function TikTokMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }: an
         </div>
         <span className="material-symbols-outlined drop-shadow-md">live_tv</span>
       </div>
-
-      {/* Side Actions UI */}
       <div className="absolute bottom-24 right-2 flex flex-col items-center gap-6 text-white z-20">
         <div className="flex flex-col items-center gap-1">
           <div className="w-12 h-12 bg-white rounded-full border-2 border-white overflow-hidden p-[2px]">
-            <div className="w-full h-full bg-slate-200 rounded-full flex items-center justify-center">
-              <span className="material-symbols-outlined text-black">person</span>
+            <div className="w-full h-full bg-slate-200 rounded-full flex items-center justify-center text-black">
+              P
             </div>
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs -mb-2">+</div>
           </div>
@@ -199,16 +219,12 @@ function TikTokMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }: an
           </div>
         ))}
       </div>
-
-      {/* Bottom Text UI */}
       <div className="absolute bottom-20 left-4 right-16 text-white z-20 flex flex-col gap-2">
         <p className="font-bold text-sm drop-shadow-md">@EthniCITY_Sonic</p>
         <p className="text-sm line-clamp-3 drop-shadow-md">
           {zine.pull_quote} The vibe at {zine.meta.location.neighbourhood} is unmatched. Discovered the brilliant {zine.meta.featured_artist.name}. #EthniCITY #GlobalSouthCulture #{zine.meta.location.city.replace(/\s+/g, "")}
         </p>
       </div>
-
-      {/* Spinning Record / Sound UI */}
       <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center text-white z-20">
         <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20">
           <span className={`material-symbols-outlined text-sm ${anyOtherProps.isPlaying ? 'animate-pulse text-[#39ff14]' : ''}`}>music_note</span>
@@ -231,7 +247,6 @@ function TikTokMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }: an
 function InstagramMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }: any) {
   return (
     <div className="relative w-[400px] bg-white border border-slate-200 shadow-xl flex-shrink-0">
-      {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-slate-100">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black" style={{ background: "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)" }}>
@@ -249,19 +264,13 @@ function InstagramMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }:
         </div>
         <span className="material-symbols-outlined text-slate-600">more_horiz</span>
       </div>
-
-      {/* Media */}
       <div className="w-full aspect-square relative overflow-hidden">
         <img src={heroImageUrl} alt="" className="min-w-full min-h-full object-cover" />
-        
-        {/* Tag popup */}
         <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1">
           <span className="material-symbols-outlined text-[14px]">person</span>
           {zine.meta.featured_artist.name.replace(/\s+/g, "").toLowerCase()}
         </div>
       </div>
-
-      {/* Actions */}
       <div className="p-3 flex justify-between items-center text-black">
         <div className="flex gap-4">
           <span className="material-symbols-outlined text-3xl">favorite</span>
@@ -270,17 +279,14 @@ function InstagramMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }:
         </div>
         <span className="material-symbols-outlined text-3xl">bookmark</span>
       </div>
-
-      {/* Caption Area */}
       <div className="px-4 pb-4">
         <p className="font-bold text-sm mb-1 text-black">12,402 likes</p>
         <p className="text-sm text-black">
           <span className="font-bold mr-2">ethni_city</span>
           {zine.share_caption}
         </p>
-        
         {primaryTrack && (
-          <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition-colors">
+          <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-3">
             {primaryTrack.albumArtUrl ? (
               <img src={primaryTrack.albumArtUrl} alt="" className="w-10 h-10 rounded shadow-sm object-cover" />
             ) : (
@@ -294,7 +300,6 @@ function InstagramMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }:
             </div>
           </div>
         )}
-        
         <p className="text-[10px] text-slate-400 mt-3 uppercase tracking-wider">2 hours ago</p>
       </div>
     </div>
