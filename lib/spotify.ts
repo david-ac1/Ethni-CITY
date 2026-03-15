@@ -46,48 +46,105 @@ export interface SpotifyTrackData {
 }
 
 /**
+ * Maps common country names to ISO-2 codes for Spotify market lookup.
+ */
+function getMarketCode(countryName: string): string {
+  const mapping: Record<string, string> = {
+    "Morocco": "MA",
+    "Belgium": "BE",
+    "Nigeria": "NG",
+    "Senegal": "SN",
+    "Mali": "ML",
+    "Brazil": "BR",
+    "Colombia": "CO",
+    "Mexico": "MX",
+    "South Africa": "ZA",
+    "Kenya": "KE",
+    "Ghana": "GH",
+    "Ethiopia": "ET",
+    "Egypt": "EG",
+    "Algeria": "DZ",
+    "Tunisia": "TN",
+    "United States": "US",
+    "United Kingdom": "GB",
+    "France": "FR",
+    "Germany": "DE",
+    "Japan": "JP",
+    "Thailand": "TH",
+    "Indonesia": "ID",
+    "Vietnam": "VN",
+    "India": "IN",
+  };
+  return mapping[countryName] || "US";
+}
+
+/**
  * Searches Spotify for a specific track by an artist, but returns up to 5 tracks in total.
- * The specific recommended track (if found) will be the first item, followed by their other top tracks.
+ * Implements a tiered market fallback (Local -> US -> Global) and PRIORITIZES tracks with previews.
+ * Aggressively checks across markets to find the one that actually provides a preview_url.
  */
 export async function searchArtistTrack(
   artistName: string,
-  trackName: string
+  trackName: string,
+  country: string = "United States"
 ): Promise<SpotifyTrackData[]> {
   const token = await getSpotifyAccessToken();
   if (!token) return [];
 
   const results: SpotifyTrackData[] = [];
   const seenTrackIds = new Set<string>();
+  const market = getMarketCode(country);
+  const marketsToTry = Array.from(new Set([market, "US", "GB"])); // Prioritize local, then US/GB fallbacks
 
   try {
-    // 1. First, try to find the specific track explicitly
+    // 1. First, try to find the specific track explicitly (Across markets if needed)
     let specificTrack = null;
     if (trackName) {
-      const query = `track:${trackName} artist:${artistName}`;
-      const searchRes = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (searchRes.ok) {
-        const searchData = await searchRes.json();
-        specificTrack = searchData.tracks?.items?.[0];
-      }
-
-      // Fallback: If no specific track found with title, try just the artist name to see if they exist
-      if (!specificTrack) {
-        console.log(`Specific track search failed for ${artistName}, falling back to artist-only search...`);
-        const artistFallbackRes = await fetch(
-          `https://api.spotify.com/v1/search?q=${encodeURIComponent('artist:' + artistName)}&type=track&limit=1`,
+      for (const m of marketsToTry) {
+        console.log(`[Spotify] Searching for "${trackName}" by "${artistName}" in market: ${m}...`);
+        const query = `track:${trackName} artist:${artistName}`;
+        const searchRes = await fetch(
+          `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5&market=${m}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        if (artistFallbackRes.ok) {
-          const fallbackData = await artistFallbackRes.json();
-          specificTrack = fallbackData.tracks?.items?.[0];
+
+        if (searchRes.ok) {
+          const searchData = await searchRes.json();
+          const items = searchData.tracks?.items || [];
+          
+          // Look for a version with a preview in this market
+          const withPreview = items.find((t: any) => !!t.preview_url);
+          specificTrack = withPreview || items[0];
+          
+          if (specificTrack && specificTrack.preview_url) {
+            console.log(`[Spotify] ✅ Found track with preview in market: ${m}`);
+            break; 
+          }
+        }
+      }
+
+      // Fallback: If no specific track found with title, try just the artist name
+      if (!specificTrack) {
+        for (const m of marketsToTry) {
+          console.log(`[Spotify] Specific track search fail for ${artistName}, fallback to artist search in market: ${m}...`);
+          const artistFallbackRes = await fetch(
+            `https://api.spotify.com/v1/search?q=${encodeURIComponent('artist:' + artistName)}&type=track&limit=5&market=${m}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (artistFallbackRes.ok) {
+            const fallbackData = await artistFallbackRes.json();
+            const items = fallbackData.tracks?.items || [];
+            const withPreview = items.find((t: any) => !!t.preview_url);
+            specificTrack = withPreview || items[0];
+            if (specificTrack && specificTrack.preview_url) {
+              console.log(`[Spotify] ✅ Found artist track with preview in market: ${m}`);
+              break;
+            }
+          }
         }
       }
         
-      if (specificTrack && specificTrack.preview_url) {
+      if (specificTrack) {
         results.push({
           trackName: specificTrack.name,
           previewUrl: specificTrack.preview_url,
@@ -98,42 +155,62 @@ export async function searchArtistTrack(
       }
     }
 
-    // 2. Regardless of finding the specific track, fetch the artist's general top tracks
-    console.log(`Fetching general top tracks for "${artistName}" to fill out the roster...`);
-    
-    const artistRes = await fetch(
+    // 2. Fetch the artist's general top tracks (Across markets to maximize preview availability)
+    const artistSearchRes = await fetch(
       `https://api.spotify.com/v1/search?q=${encodeURIComponent(artistName)}&type=artist&limit=1`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     
-    if (artistRes.ok) {
-      const artistData = await artistRes.json();
+    if (artistSearchRes.ok) {
+      const artistData = await artistSearchRes.json();
       const artistId = artistData.artists?.items?.[0]?.id;
       
       if (artistId) {
-        const topTracksRes = await fetch(
-          `https://api.spotify.com/v1/artists/${artistId}/top-tracks`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        let allMarketTracks: any[] = [];
+        let tracksWithPreviews: any[] = [];
         
-        if (topTracksRes.ok) {
-          const topTracksData = await topTracksRes.json();
-          const tracksData = topTracksData.tracks || [];
+        for (const m of marketsToTry) {
+          console.log(`[Spotify] Fetching top tracks for "${artistName}" in market: ${m}...`);
+          const topTracksRes = await fetch(
+            `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=${m}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
           
-          for (const track of tracksData) {
-            // Stop once we have 5 tracks
-            if (results.length >= 5) break;
+          if (topTracksRes.ok) {
+            const topTracksData = await topTracksRes.json();
+            const tracks = topTracksData.tracks || [];
+            allMarketTracks = [...allMarketTracks, ...tracks];
             
-            // Deduplicate and ONLY add tracks that have a playable preview_url
-            if (!seenTrackIds.has(track.id) && track.preview_url) {
-              results.push({
-                trackName: track.name,
-                previewUrl: track.preview_url,
-                albumArtUrl: track.album?.images?.[0]?.url || null,
-                spotifyUrl: track.external_urls?.spotify || "",
-              });
-              seenTrackIds.add(track.id);
-            }
+            // Collect any tracks that have previews in THIS market
+            const withPrev = tracks.filter((t: any) => !!t.preview_url);
+            tracksWithPreviews = [...tracksWithPreviews, ...withPrev];
+            
+            // If we have enough tracks with previews, we can stop early
+            if (tracksWithPreviews.length >= 5) break;
+          }
+        }
+
+        // Deduplicate
+        const uniquePool = Array.from(new Map([...tracksWithPreviews, ...allMarketTracks].map(t => [t.id, t])).values());
+        
+        // Sort: Previews first, then popularity
+        uniquePool.sort((a, b) => {
+          if (a.preview_url && !b.preview_url) return -1;
+          if (!a.preview_url && b.preview_url) return 1;
+          return (b.popularity || 0) - (a.popularity || 0);
+        });
+        
+        for (const track of uniquePool) {
+          if (results.length >= 5) break;
+          if (!seenTrackIds.has(track.id)) {
+            console.log(`[Spotify] Adding track: ${track.name} (Preview: ${!!track.preview_url})`);
+            results.push({
+              trackName: track.name,
+              previewUrl: track.preview_url,
+              albumArtUrl: track.album?.images?.[0]?.url || null,
+              spotifyUrl: track.external_urls?.spotify || "",
+            });
+            seenTrackIds.add(track.id);
           }
         }
       }

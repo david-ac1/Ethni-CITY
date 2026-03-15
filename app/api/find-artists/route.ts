@@ -8,41 +8,43 @@ function buildArtistPrompt(
   culturalMarkers: string[],
   vibeDescriptors: string[]
 ): string {
-  return `You are an ethnomusicologist and cultural curator specializing in niche, underground, and heritage music from the Global South.
+  return `You are an ethnomusicologist and cultural curator specializing in the Global South.
+  
+Your task: Find exactly 12 REAL artists from the COUNTRY of ${country}. While you should keep the vibe of ${city} and ${neighbourhood} in mind, PRIORITIZE finding artists from across the entire country to ensure we find tracks with playable audio previews on Spotify.
 
-Your task: Find exactly 8 REAL, NICHE local artists from this specific location. These must be:
-- Genuinely from or deeply associated with this exact area (not just the country)
-- NON-MAINSTREAM — not on international charts, not globally famous
-- Must be actively streaming on Spotify (do not hallucinate artists, pick real ones)
-- Authentic to the local culture — can be either traditional/heritage instrumentalists OR contemporary niche acts (e.g., local underground electronic, indie, regional hip-hop, experimental, modern RnB) as long as they represent the creative pulse of this specific location.
-- Streamable on at least one platform (Spotify, Apple Music, YouTube, Bandcamp, or SoundCloud)
+You MUST return a balanced roster:
 
-Location: ${neighbourhood}, ${city}, ${country}
-Cultural markers observed: ${culturalMarkers.join(", ")}
+1. THE ANCHORS (4-5 Artists): 
+   - These are major, mainstream, or globally-recognized stars from ${country} (e.g., Burna Boy, Wizkid, Tems, Ayra Starr, Rema for Nigeria; or equivalent for other countries).
+   - They MUST have high-quality audio previews on Spotify to "guarantee" a vibrant demo experience.
+   - They provide the reliable, studio-quality sound for the Sonic Story-Zine.
+
+2. THE DISCOVERIES (7-8 Artists):
+   - These are NICHE, underground, or heritage local artists from across ${country}.
+   - They should still represent the cultural pulse seen in the photo markers (${culturalMarkers.join(", ")}).
+   - IMPORTANT: Even for niche artists, PRIORITIZE those with at least one high-quality track on Spotify. We need the 30-second audio previews to boost the app demo.
+
+Location context: ${neighbourhood !== "Undeterminable" ? neighbourhood : "Unknown Neighbourhood"}, ${city !== "Undeterminable" ? city : "Unknown City"}, ${country}
+Cultural markers: ${culturalMarkers.join(", ")}
 Vibe: ${vibeDescriptors.join(", ")}
-
-Search for artists using these approaches:
-1. "${city} underground ${country} music niche artists"
-2. "${neighbourhood} ${city} local musicians traditional"
-3. "${country} Global South heritage music ${culturalMarkers[0] || ""}"
 
 Return ONLY valid JSON in this exact schema:
 {
   "artists": [
     {
       "name": "string — exact artist/band name",
-      "genre": "string — specific genre (e.g. 'Afrobeats Lagos underground', 'Lagos Fuji revival')",
-      "origin": "string — specific city/neighbourhood they are from",
-      "bio": "string — 2 sentences. First: their story/sound. Second: cultural connection to this location.",
-      "recommended_song": "string — name of a specific, real song by this artist that fits the vibe",
-      "why_discovered": "string — 1 sentence explaining what cultural marker led to this discovery",
-      "spotify_search": "string — exact Spotify search query to find them (usually just their exact name)",
-      "youtube_search": "string — exact YouTube search query",
+      "genre": "string — specific genre",
+      "origin": "string — city/region in ${country}",
+      "bio": "string — 2 sentences. Story/sound + cultural connection",
+      "recommended_song": "string — name of a specific, real song with a preview",
+      "why_discovered": "string — 1 sentence explaining the link to a cultural marker",
+      "spotify_search": "string",
+      "youtube_search": "string",
       "streaming_likelihood": "high|medium|low"
     }
   ],
-  "location_music_context": "string — 2-3 sentences about the music scene/history of this specific location",
-  "zine_hook": "string — An evocative 8-15 word pull quote for the Sonic Story-Zine (Playfair Display italic style)"
+  "location_music_context": "string — scene history in ${country} (2-3 sentences)",
+  "zine_hook": "string — Evocative 8-15 word pull quote"
 }`;
 }
 
@@ -59,9 +61,13 @@ export async function POST(req: NextRequest) {
 
     const { city, country, neighbourhood, cultural_markers, vibe_descriptors } = body;
 
-    if (!city || !country || city === "Undeterminable") {
-      return NextResponse.json({ success: true, artists: [], location_music_context: "Location could not be determined from the photo.", zine_hook: "" });
+    if (!country || country === "Undeterminable") {
+      return NextResponse.json({ success: true, artists: [], location_music_context: "Country could not be determined from the photo.", zine_hook: "" });
     }
+
+    // If city is unknown, we continue but with country-wide context
+    const displayLocation = city === "Undeterminable" ? country : `${city}, ${country}`;
+    console.log(`Starting artist discovery for: ${displayLocation}`);
 
     const prompt = buildArtistPrompt(city, country, neighbourhood, cultural_markers, vibe_descriptors);
     
@@ -70,9 +76,11 @@ export async function POST(req: NextRequest) {
     let attempts = 0;
     let finalContext = "";
     let finalHook = "";
-    const { searchArtistTrack } = await import("@/lib/spotify");
+    const { validateArtistOnITunes } = await import("@/lib/itunes");
+    const { getMarketCode } = await import("@/lib/music-utils");
+    const market = getMarketCode(country);
 
-    console.log(`Starting artist persistence loop for ${city}, ${country}...`);
+    console.log(`Starting artist persistence loop for ${displayLocation} (iTunes Market: ${market})...`);
 
     while (validArtists.length < 5 && attempts < 3) {
       console.log(`Attempt ${attempts + 1}: Asking Gemini for artists...`);
@@ -98,26 +106,34 @@ export async function POST(req: NextRequest) {
       finalHook = artistData.zine_hook || finalHook;
 
       if (artistData.artists && Array.isArray(artistData.artists)) {
-        console.log(`Found ${artistData.artists.length} raw artists from Gemini. Validating on Spotify...`);
-        const enrichedArtists = await Promise.all(
-          artistData.artists.map(async (artist: any) => {
-            const spotifyTracks = await searchArtistTrack(artist.name, artist.recommended_song || "");
-            return {
-              ...artist,
-              spotify_tracks: spotifyTracks,
-            };
-          })
-        );
+        console.log(`Found ${artistData.artists.length} raw artists from Gemini. Validating on iTunes...`);
         
-        // Filter out any artists that we couldn't find a single valid Spotify track for
-        const filtered = enrichedArtists.filter((a) => a.spotify_tracks && a.spotify_tracks.length > 0);
-        
-        for (const f of filtered) {
-          if (!seenNames.has(f.name.toLowerCase())) {
-            validArtists.push(f);
-            seenNames.add(f.name.toLowerCase());
-            console.log(`✅ Verified streamable artist: ${f.name}`);
-          }
+        for (const artist of artistData.artists) {
+            if (validArtists.length >= 5) break;
+            if (seenNames.has(artist.name.toLowerCase())) continue;
+
+            try {
+                const { isValid, topTracks } = await validateArtistOnITunes(artist.name, market);
+                if (isValid) {
+                    const hasPreview = topTracks.some((t: any) => !!t.previewUrl);
+                    console.log(`✅ Verified artist: ${artist.name} (Has Previews: ${hasPreview})`);
+                    
+                    validArtists.push({
+                        ...artist,
+                        spotify_tracks: topTracks.map((t: any) => ({
+                            trackName: t.trackName,
+                            previewUrl: t.previewUrl,
+                            albumArtUrl: t.albumArtUrl,
+                            spotifyUrl: t.musicUrl // Mapping iTunes URL to existing field
+                        }))
+                    });
+                    seenNames.add(artist.name.toLowerCase());
+                } else {
+                    console.log(`❌ Artist not found on iTunes: ${artist.name}`);
+                }
+            } catch (err) {
+                console.error(`Error validating ${artist.name}:`, err);
+            }
         }
       }
       

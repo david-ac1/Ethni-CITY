@@ -3,7 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 const ANALYSIS_PROMPT = `You are an expert cultural geographer and ethnomusicologist specializing in the Global South.
 
-Analyze this travel photo and extract the following information as JSON. Be highly specific — avoid generic descriptions. Focus on hyper-local, neighbourhood-level details that could help identify niche local music.
+Analyze this travel photo and extract the exact geographic location. Be a cultural detective. Look for hyper-local identifying features:
+- License plate formats and registration codes
+- Typography and language on street signs or shop fronts
+- Specific local retail brands or food wrapper litter
+- Unique architectural motifs, window styles, or roofing materials
+- Religious symbols or local fashion/fabric patterns
+
+If you cannot identify the exact city with high confidence, provide your BEST GUESS for the city and neighbourhood based on the visual evidence.
 
 Return ONLY valid JSON in this exact schema:
 {
@@ -18,8 +25,8 @@ Return ONLY valid JSON in this exact schema:
   "coordinates_hint": "string — city, country for geocoding (e.g. 'Lagos Island, Lagos, Nigeria')"
 }
 
-Examples of good cultural_markers: ["Yoruba agbada fabric patterns", "open-air market stalls with zinc roofing", "painted concrete walls with Oshun motifs"]
-Examples of good vibe_descriptors: ["humid market intensity", "chaotic abundance", "informal economy energy", "Afrobeats in the distance"]`;
+Examples of good cultural_markers: ["Yoruba agbada fabric patterns", "Lagos yellow danfo bus with black stripes", "street signs in Hausa or Yoruba"]
+Examples of good vibe_descriptors: ["humid market intensity", "informal economy energy", "highlife music in the air"]`;
 
 export async function POST(req: NextRequest) {
   try {
