@@ -61,15 +61,16 @@ export async function POST(req: NextRequest) {
 
     const { city, country, neighbourhood, cultural_markers, vibe_descriptors } = body;
 
-    if (!city || !country) {
-      return NextResponse.json({ error: "city and country are required" }, { status: 400 });
+    if (!city || !country || city === "Undeterminable") {
+      return NextResponse.json({ success: true, artists: [], location_music_context: "Location could not be determined from the photo.", zine_hook: "" });
     }
 
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       generationConfig: {
-        temperature: 0.7,
+        temperature: 0.4,
         topP: 0.9,
+        responseMimeType: "application/json",
       },
     });
 
