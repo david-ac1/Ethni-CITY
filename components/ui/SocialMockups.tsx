@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ZineData } from "@/lib/store";
 
 interface SocialMockupsProps {
@@ -11,13 +11,19 @@ interface SocialMockupsProps {
 export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps) {
   const [activeTab, setActiveTab] = useState<"tiktok" | "instagram">("tiktok");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const allArtists = zine.meta.all_artists || [];
   
   const togglePlay = (trackUrl: string) => {
     if (playingId === trackUrl) {
+      audioRef.current?.pause();
       setPlayingId(null);
     } else {
       setPlayingId(trackUrl);
+      if (audioRef.current) {
+        audioRef.current.src = trackUrl;
+        audioRef.current.play().catch(err => console.error("Playback failed:", err));
+      }
     }
   };
 
@@ -30,6 +36,13 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
+      {/* Hidden master audio element */}
+      <audio 
+        ref={audioRef}
+        onEnded={() => setPlayingId(null)}
+        className="hidden"
+      />
+
       {/* Tabs */}
       <div className="flex gap-4 border-b-2 border-slate-200 w-full justify-center">
         <button
@@ -67,6 +80,7 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
               heroImageUrl={heroImageUrl} 
               primaryTrack={currentTrack} 
               artistName={currentArtistName}
+              isPlaying={!!playingId}
             />
           )}
         </div>
@@ -109,11 +123,11 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
                 </div>
                 
                 {track.previewUrl ? (
-                  <button className={`size-8 rounded-full flex items-center justify-center transition-colors ${playingId === track.previewUrl ? 'bg-[#9c06f9] text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
+                  <div className={`size-8 rounded-full flex items-center justify-center transition-colors ${playingId === track.previewUrl ? 'bg-[#9c06f9] text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
                     <span className="material-symbols-outlined text-xl leading-none">
                       {playingId === track.previewUrl ? 'pause' : 'play_arrow'}
                     </span>
-                  </button>
+                  </div>
                 ) : (
                   <a 
                     href={track.spotifyUrl} 
@@ -127,15 +141,6 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
                 )}
               </div>
             )})}
-            
-            {/* Hidden master audio element */}
-            <audio 
-              key={playingId}
-              autoPlay 
-              src={playingId || ""} 
-              onEnded={() => setPlayingId(null)}
-              className="hidden"
-            />
           </div>
         )}
         {allArtists.length === 0 && (
@@ -232,13 +237,14 @@ function InstagramMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }:
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black" style={{ background: "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)" }}>
             EC
           </div>
-          <div>
+            <div>
             <p className="font-bold text-sm leading-tight text-black">ethni_city</p>
-            {primaryTrack && (
               <p className="text-[10px] text-slate-500 flex items-center gap-1">
                 {zine.meta.location.city}, {zine.meta.location.country}
+                {anyOtherProps.isPlaying && (
+                  <span className="material-symbols-outlined text-[10px] animate-pulse text-[#00cf64]">music_note</span>
+                )}
               </p>
-            )}
           </div>
         </div>
         <span className="material-symbols-outlined text-slate-600">more_horiz</span>
