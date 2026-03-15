@@ -41,7 +41,7 @@ const CesiumMap = forwardRef<CesiumMapHandle, CesiumMapProps>(function CesiumMap
           roll: 0,
         },
         duration: 5.5, // Even more cinematic
-        easingFunction: Cesium.EasingFunction.HERMITE_OUT, // Smoother finish
+        easingFunction: Cesium.EasingFunction.QUADRATIC_OUT, // Smoother finish
       });
     },
   }));
