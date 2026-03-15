@@ -1,6 +1,5 @@
 import { runSmartGemini } from "@/lib/gemini";
 import { NextRequest, NextResponse } from "next/server";
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!);
 
 function buildArtistPrompt(
   city: string,
