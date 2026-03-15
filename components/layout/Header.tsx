@@ -4,34 +4,40 @@ import Link from "next/link";
 
 interface HeaderProps {
   variant?: "hook" | "dashboard" | "zine";
+  onUploadClick?: () => void;
+  activeLocation?: string;
 }
 
-export default function Header({ variant = "hook" }: HeaderProps) {
+export default function Header({ variant = "hook", onUploadClick, activeLocation }: HeaderProps) {
+  // --- Shared Logo Component ---
+  const Logo = () => (
+    <div className="flex items-center gap-4">
+      <div
+        className="border-4 border-black p-2 rounded-lg neo-brutalism-shadow-sm"
+        style={{ backgroundColor: "#e2725b", transform: "rotate(-2deg)" }}
+      >
+        <span className="material-symbols-outlined text-white text-3xl font-bold">graphic_eq</span>
+      </div>
+      <Link href="/">
+        <h2
+          className="text-3xl font-black tracking-tighter uppercase italic px-3 py-1 border-4 border-black rounded-xl cursor-pointer hover:scale-105 transition-transform"
+          style={{ backgroundColor: "white" }}
+        >
+          Ethni-CITY
+        </h2>
+      </Link>
+    </div>
+  );
+
+  // --- Variant 1: Landing (Hook) ---
   if (variant === "hook") {
     return (
       <header
         className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b-[6px] border-black"
         style={{ backgroundColor: "#fdf6e3" }}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-4">
-          <div
-            className="border-4 border-black p-2 rounded-lg neo-brutalism-shadow-sm"
-            style={{ backgroundColor: "#e2725b", transform: "rotate(-2deg)" }}
-          >
-            <span className="material-symbols-outlined text-white text-3xl font-bold">graphic_eq</span>
-          </div>
-          <Link href="/">
-            <h2
-              className="text-3xl font-black tracking-tighter uppercase italic px-3 py-1 border-4 border-black rounded-xl cursor-pointer hover:scale-105 transition-transform"
-              style={{ backgroundColor: "white" }}
-            >
-              Ethni-CITY
-            </h2>
-          </Link>
-        </div>
+        <Logo />
 
-        {/* Nav */}
         <nav className="hidden md:flex items-center gap-10">
           <Link
             href="/"
@@ -56,7 +62,6 @@ export default function Header({ variant = "hook" }: HeaderProps) {
           </Link>
         </nav>
 
-        {/* CTA */}
         <Link href="/dashboard">
           <button
             className="text-white border-4 border-black px-6 py-2 font-black text-lg rounded-full neo-brutalism-shadow-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all uppercase"
@@ -69,49 +74,77 @@ export default function Header({ variant = "hook" }: HeaderProps) {
     );
   }
 
+  // --- Variant 2: Dashboard ---
+  if (variant === "dashboard") {
+    return (
+      <header
+        className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b-[6px] border-black"
+        style={{ backgroundColor: "#fdf6e3" }}
+      >
+        <div className="flex items-center gap-8">
+          <Logo />
+          {activeLocation && activeLocation !== "Awaiting your photo..." && (
+            <div className="hidden lg:flex items-center gap-2 bg-white thick-outline px-4 py-1 rounded-full neo-brutalism-shadow-sm rotate-[-1deg]">
+              <span className="material-symbols-outlined text-sm" style={{ color: "#9c06f9" }}>location_on</span>
+              <span className="font-bold text-xs uppercase tracking-tighter">
+                {activeLocation.split(",")[1]?.trim() || "Global South"}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-4 items-center">
+          {onUploadClick && (
+            <button
+              onClick={onUploadClick}
+              className="flex items-center gap-2 border-4 border-black px-4 py-2 rounded-lg font-bold text-sm uppercase neo-brutalism-shadow-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+              style={{ backgroundColor: "#00cf64" }}
+            >
+              <span className="material-symbols-outlined text-xl">add_photo_alternate</span>
+              <span className="hidden sm:inline">Upload Photo</span>
+            </button>
+          )}
+          <div className="size-10 border-4 border-black rounded-full overflow-hidden flex items-center justify-center text-white font-black text-sm neo-brutalism-shadow-sm" style={{ backgroundColor: "#b87333" }}>
+            DJ
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // --- Variant 3: Zine ---
   if (variant === "zine") {
     return (
       <header
-        className="flex items-center justify-between border-b px-6 md:px-20 py-4 backdrop-blur-md sticky top-0 z-50"
-        style={{ backgroundColor: "rgba(253,246,227,0.85)", borderBottomColor: "rgba(156,6,249,0.1)" }}
+        className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b-[6px] border-black"
+        style={{ backgroundColor: "#fdf6e3" }}
       >
         <div className="flex items-center gap-12">
-          <Link href="/" className="flex items-center gap-3" style={{ color: "#9c06f9" }}>
-            <div className="size-6">
-              <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z" fill="currentColor" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold leading-tight tracking-tighter uppercase" style={{ color: "#1b0f23" }}>Ethni-CITY</h2>
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
+          <Logo />
+          <nav className="hidden md:flex items-center gap-8 px-4 py-1 border-4 border-black rounded-xl bg-white neo-brutalism-shadow-sm">
             {["Stories", "Music", "Zine", "Archive"].map((item) => (
-              <Link key={item} href="#" className="text-sm font-semibold uppercase tracking-widest transition-colors hover:text-purple-700" style={{ color: "#3d2c58" }}>
+              <Link key={item} href="#" className="text-sm font-black uppercase tracking-tight hover:text-purple-700 transition-colors" style={{ color: "#1b0f23" }}>
                 {item}
               </Link>
             ))}
           </nav>
         </div>
-        <div className="flex flex-1 justify-end gap-6 items-center">
-          <label className="hidden lg:flex flex-col min-w-48 h-10 max-w-64">
-            <div
-              className="flex w-full flex-1 items-stretch rounded-full h-full border"
-              style={{ backgroundColor: "rgba(156,6,249,0.05)", borderColor: "rgba(156,6,249,0.15)" }}
-            >
-              <div className="flex items-center justify-center pl-4" style={{ color: "rgba(156,6,249,0.6)" }}>
-                <span className="material-symbols-outlined text-xl">search</span>
-              </div>
-              <input className="flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 px-3 text-sm font-normal outline-none" placeholder="Search the soundscape..." />
+
+        <div className="flex gap-4 items-center">
+          <div className="hidden lg:flex items-stretch rounded-full h-10 border-4 border-black bg-white neo-brutalism-shadow-sm overflow-hidden min-w-[240px]">
+            <div className="flex items-center justify-center pl-3 text-black">
+              <span className="material-symbols-outlined text-xl">search</span>
             </div>
-          </label>
+            <input className="border-none bg-transparent focus:ring-0 px-3 text-sm font-bold uppercase outline-none" placeholder="Search..." />
+          </div>
           <div className="flex gap-3">
-            {["person", "shopping_bag"].map((icon) => (
+             {["person", "shopping_bag"].map((icon) => (
               <button
                 key={icon}
-                className="flex items-center justify-center rounded-full h-10 w-10 transition-all relative"
-                style={{ backgroundColor: "rgba(156,6,249,0.1)", color: "#9c06f9" }}
+                className="flex items-center justify-center border-4 border-black rounded-full h-10 w-10 transition-all neo-brutalism-shadow-sm hover:translate-x-1 hover:translate-y-1"
+                style={{ backgroundColor: icon === "person" ? "#00cf64" : "#ffcc00", color: "black" }}
               >
-                <span className="material-symbols-outlined">{icon}</span>
+                <span className="material-symbols-outlined font-black">{icon}</span>
               </button>
             ))}
           </div>

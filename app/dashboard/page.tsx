@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Header from "@/components/layout/Header";
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -398,30 +399,12 @@ export default function DashboardPage() {
         {/* ══ CENTER: MAP ════════════════════════════════════════════ */}
         <main className="flex-grow relative flex flex-col gap-4 min-w-0">
 
-          {/* Header bar */}
-          <header className="flex justify-between items-center bg-white thick-outline p-4 rounded-xl mechanical-shadow flex-shrink-0">
-            <div className="flex items-center gap-4">
-              <div className="size-8 rounded-lg thick-outline flex items-center justify-center" style={{ backgroundColor: "#9c06f9" }}>
-                <span className="material-symbols-outlined text-white">star_rate</span>
-              </div>
-              <h1 className="text-2xl font-bold uppercase tracking-tighter italic">
-                Ethni-CITY / <span style={{ color: "#9c06f9" }}>{activeLocation.split(",")[1]?.trim() || "Global South"}</span>
-              </h1>
-            </div>
-            <div className="flex gap-4 items-center">
-              {/* Upload trigger */}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 border-4 border-black px-4 py-2 rounded-lg font-bold text-sm uppercase neo-brutalism-shadow-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
-                style={{ backgroundColor: "#00cf64" }}
-              >
-                <span className="material-symbols-outlined text-xl">add_photo_alternate</span>
-                Upload Photo
-              </button>
-              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileInput} />
-              <div className="size-10 thick-outline rounded-full overflow-hidden flex items-center justify-center text-white font-black text-sm" style={{ backgroundColor: "#b87333" }}>DJ</div>
-            </div>
-          </header>
+          <Header 
+            variant="dashboard" 
+            activeLocation={activeLocation} 
+            onUploadClick={() => fileInputRef.current?.click()} 
+          />
+          <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileInput} />
 
           {/* CesiumJS Map Porthole */}
           <div
