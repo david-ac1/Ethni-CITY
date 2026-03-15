@@ -57,7 +57,7 @@ const CesiumMap = forwardRef<CesiumMapHandle, CesiumMapProps>(function CesiumMap
       await import("cesium/Build/Cesium/Widgets/widgets.css");
       
       (window as any).CESIUM_BASE_URL = '/cesium/';
-      cesiumModule.buildModuleUrl.setBaseUrl('/cesium/');
+      (cesiumModule.buildModuleUrl as any).setBaseUrl('/cesium/');
       
       Cesium = cesiumModule;
 
