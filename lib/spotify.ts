@@ -51,8 +51,7 @@ export interface SpotifyTrackData {
  */
 export async function searchArtistTrack(
   artistName: string,
-  trackName: string,
-  explicitSearchQuery?: string
+  trackName: string
 ): Promise<SpotifyTrackData[]> {
   const token = await getSpotifyAccessToken();
   if (!token) return [];
@@ -87,11 +86,10 @@ export async function searchArtistTrack(
     }
 
     // 2. Regardless of finding the specific track, fetch the artist's general top tracks
-    const derivedQuery = explicitSearchQuery ? explicitSearchQuery : `artist:${artistName}`;
-    console.log(`Fetching general top tracks for "${artistName}" using query "${derivedQuery}"...`);
+    console.log(`Fetching general top tracks for "${artistName}" to fill out the roster...`);
     
     const artistRes = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(derivedQuery)}&type=artist&limit=1`,
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(artistName)}&type=artist&limit=1`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     

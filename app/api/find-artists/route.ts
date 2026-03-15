@@ -38,7 +38,7 @@ Return ONLY valid JSON in this exact schema:
       "bio": "string — 2 sentences. First: their story/sound. Second: cultural connection to this location.",
       "recommended_song": "string — name of a specific, real song by this artist that fits the vibe",
       "why_discovered": "string — 1 sentence explaining what cultural marker led to this discovery",
-      "spotify_search": "string — STRICT spotify search query using format 'artist:\"Name\" genre:\"Local Genre\"'",
+      "spotify_search": "string — exact Spotify search query to find them (usually just their exact name)",
       "youtube_search": "string — exact YouTube search query",
       "streaming_likelihood": "high|medium|low"
     }
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
         console.log(`Found ${artistData.artists.length} raw artists from Gemini. Validating on Spotify...`);
         const enrichedArtists = await Promise.all(
           artistData.artists.map(async (artist: any) => {
-            const spotifyTracks = await searchArtistTrack(artist.name, artist.recommended_song || "", artist.spotify_search);
+            const spotifyTracks = await searchArtistTrack(artist.name, artist.recommended_song || "");
             return {
               ...artist,
               spotify_tracks: spotifyTracks,
