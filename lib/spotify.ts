@@ -73,7 +73,7 @@ export async function searchArtistTrack(
         const searchData = await searchRes.json();
         specificTrack = searchData.tracks?.items?.[0];
         
-        if (specificTrack) {
+        if (specificTrack && specificTrack.preview_url) {
           results.push({
             trackName: specificTrack.name,
             previewUrl: specificTrack.preview_url,
