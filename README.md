@@ -105,6 +105,20 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 
 ---
 
+## 🧪 Testing Instructions
+Follow these steps to reproduce the full **Ethni-CITY** experience:
+
+1. **Upload a Photo**: Drag and drop a travel photo (ideally from the Global South: Brazil, Nigeria, Thailand, etc.) onto the central map "porthole" or use the **Upload Photo** button in the navbar.
+2. **Observe Vision Grounding**: Watch the 3D globe (Cesium) perform a **Sonic Zoom** to the exact location. Verify technical alignment in the "Your Raw Trips" panel where Gemini Vision outputs the identified location and cultural metadata.
+3. **Curate the Vibe**: Click "Set the Vibe" to interact with the **Agentic DJ**. Type a creative prompt (e.g., *"Dark tropical bass"* or *"Acoustic morning in Lagos"*).
+4. **Generate the Zine**: Click **Process to Zine**. This triggers the interleaved storytelling engine. 
+5. **Verify Interleaved Output**: Once the zine is generated, verify that it seamlessly combines:
+   - **Narrative Lore**: Historical context of the location.
+   - **Visuals**: Your original photo and the spatial context.
+   - **Audio**: Streaming song previews of niche local artists discovered by the DJ.
+
+---
+
 ## 👨‍💻 Findings & Learnings
 - **Multimodal Grounding**: We found that Gemini's ability to identify specific architecture styles (e.g., Brazilian brutalism vs. Nigerian colonial) allowed us to match music with unprecedented accuracy.
 - **Hierarchical Fallbacks**: Implementing a multi-tier API model (Phase 9) was crucial for hackathon stability, allowing the app to stay live even when standard free-tier quotas were hit.

@@ -1,0 +1,45 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/checkout@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Pre-build (Cesium Asset Automation)
+      run: npm run prebuild
+
+    - name: Next.js Build
+      run: npm run build
+      env:
+        # These are dummy variables for the build-time type check
+        # Real secrets should be configured in your GitHub Repo Secrets
+        GOOGLE_GENERATIVE_AI_API_KEY_FREE: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY_FREE }}
+        GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        NEXT_PUBLIC_CESIUM_ION_TOKEN: ${{ secrets.NEXT_PUBLIC_CESIUM_ION_TOKEN }}
+
+    - name: Verify Build
+      run: |
+        if [ -d ".next" ]; then
+          echo "Build Successful"
+        else
+          echo "Build Failed"
+          exit 1
+        fi
