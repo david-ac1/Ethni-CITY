@@ -10,8 +10,23 @@ interface SocialMockupsProps {
 
 export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps) {
   const [activeTab, setActiveTab] = useState<"tiktok" | "instagram">("tiktok");
+  const [playingId, setPlayingId] = useState<string | null>(null);
   const allArtists = zine.meta.all_artists || [];
-  const primaryTrack = zine.meta.featured_artist.spotify_tracks?.[0] || null;
+  
+  const togglePlay = (trackUrl: string) => {
+    if (playingId === trackUrl) {
+      setPlayingId(null);
+    } else {
+      setPlayingId(trackUrl);
+    }
+  };
+
+  const currentTrack = allArtists.flatMap(a => a.spotify_tracks || []).find(t => t.previewUrl === playingId) 
+    || zine.meta.featured_artist.spotify_tracks?.[0] 
+    || null;
+
+  const currentArtistName = allArtists.find(a => a.spotify_tracks?.some(t => t.previewUrl === playingId))?.name 
+    || zine.meta.featured_artist.name;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
@@ -39,9 +54,20 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
         {/* Phone Mockup Area */}
         <div className="flex-shrink-0">
           {activeTab === "tiktok" ? (
-            <TikTokMockup zine={zine} heroImageUrl={heroImageUrl} primaryTrack={primaryTrack} />
+            <TikTokMockup 
+              zine={zine} 
+              heroImageUrl={heroImageUrl} 
+              primaryTrack={currentTrack} 
+              isPlaying={!!playingId} 
+              artistName={currentArtistName}
+            />
           ) : (
-            <InstagramMockup zine={zine} heroImageUrl={heroImageUrl} primaryTrack={primaryTrack} />
+            <InstagramMockup 
+              zine={zine} 
+              heroImageUrl={heroImageUrl} 
+              primaryTrack={currentTrack} 
+              artistName={currentArtistName}
+            />
           )}
         </div>
 
@@ -56,27 +82,60 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
               if (!track) return null;
               
               return (
-              <div key={i} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 transition-colors">
+              <div 
+                key={i} 
+                onClick={() => track.previewUrl && togglePlay(track.previewUrl)}
+                className={`flex items-center gap-3 p-3 bg-white border rounded-xl shadow-sm transition-all cursor-pointer group ${playingId === track.previewUrl ? 'border-[#9c06f9] ring-2 ring-[#9c06f9]/10' : 'border-slate-200 hover:border-slate-300'}`}
+              >
                  {track.albumArtUrl ? (
-                  <img src={track.albumArtUrl} alt="" className="w-12 h-12 rounded shadow-sm object-cover" />
+                   <div className="relative w-12 h-12 flex-shrink-0">
+                    <img src={track.albumArtUrl} alt="" className="w-full h-full rounded shadow-sm object-cover" />
+                    {track.previewUrl && (
+                      <div className="absolute inset-0 bg-black/40 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="material-symbols-outlined text-white text-xl">
+                          {playingId === track.previewUrl ? 'pause' : 'play_arrow'}
+                        </span>
+                      </div>
+                    )}
+                   </div>
                 ) : (
-                  <div className="w-12 h-12 bg-[#1DB954] text-white flex items-center justify-center rounded shadow-sm">
+                  <div className="w-12 h-12 bg-[#1DB954] text-white flex-shrink-0 flex items-center justify-center rounded shadow-sm">
                     <span className="material-symbols-outlined text-xl">music_note</span>
                   </div>
                 )}
                 <div className="flex flex-col min-w-0 flex-grow">
-                  <span className="text-sm font-bold text-black truncate">{track.trackName}</span>
+                  <span className="text-sm font-bold text-black truncate group-hover:text-[#9c06f9] transition-colors">{track.trackName}</span>
                   <span className="text-[10px] text-slate-500 uppercase tracking-widest truncate">{artist.name}</span>
                 </div>
+                
                 {track.previewUrl ? (
-                  <audio controls src={track.previewUrl} className="h-8 w-[100px] border border-slate-200 rounded-full bg-slate-50" />
+                  <button className={`size-8 rounded-full flex items-center justify-center transition-colors ${playingId === track.previewUrl ? 'bg-[#9c06f9] text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
+                    <span className="material-symbols-outlined text-xl leading-none">
+                      {playingId === track.previewUrl ? 'pause' : 'play_arrow'}
+                    </span>
+                  </button>
                 ) : (
-                  <a href={track.spotifyUrl} target="_blank" rel="noopener noreferrer" className="size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-[#1DB954] transition-colors">
+                  <a 
+                    href={track.spotifyUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    onClick={(e) => e.stopPropagation()}
+                    className="size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-300 hover:text-[#1DB954] transition-colors"
+                  >
                      <span className="material-symbols-outlined text-lg">open_in_new</span>
                   </a>
                 )}
               </div>
             )})}
+            
+            {/* Hidden master audio element */}
+            <audio 
+              key={playingId}
+              autoPlay 
+              src={playingId || ""} 
+              onEnded={() => setPlayingId(null)}
+              className="hidden"
+            />
           </div>
         )}
         {allArtists.length === 0 && (
@@ -91,7 +150,7 @@ export default function SocialMockups({ zine, heroImageUrl }: SocialMockupsProps
   );
 }
 
-function TikTokMockup({ zine, heroImageUrl, primaryTrack }: any) {
+function TikTokMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }: any) {
   return (
     <div className="relative w-[340px] h-[720px] bg-black rounded-[2.5rem] border-[12px] border-slate-900 overflow-hidden shadow-2xl flex-shrink-0">
       {/* Safe Area Notch */}
@@ -147,14 +206,14 @@ function TikTokMockup({ zine, heroImageUrl, primaryTrack }: any) {
       {/* Spinning Record / Sound UI */}
       <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center text-white z-20">
         <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20">
-          <span className="material-symbols-outlined text-sm animate-pulse">music_note</span>
+          <span className={`material-symbols-outlined text-sm ${anyOtherProps.isPlaying ? 'animate-pulse text-[#39ff14]' : ''}`}>music_note</span>
           <span className="text-xs font-bold truncate max-w-[150px]">
-            {primaryTrack?.trackName || `${zine.meta.featured_artist.name} - Original Sound`}
+            {primaryTrack?.trackName || `${anyOtherProps.artistName} - Original Sound`}
           </span>
         </div>
-        <div className="w-10 h-10 rounded-full animate-spin bg-black border-4 border-[#252525] flex items-center justify-center" style={{ animationDuration: '3s' }}>
+        <div className={`w-10 h-10 rounded-full bg-black border-4 border-[#252525] flex items-center justify-center ${anyOtherProps.isPlaying ? 'animate-spin' : ''}`} style={{ animationDuration: '3s' }}>
           {primaryTrack?.albumArtUrl ? (
-            <img src={primaryTrack.albumArtUrl} alt="" className="w-4 h-4 rounded-full object-cover" />
+            <img src={primaryTrack.albumArtUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
           ) : (
             <div className="w-4 h-4 bg-primary rounded-full" />
           )}
@@ -164,7 +223,7 @@ function TikTokMockup({ zine, heroImageUrl, primaryTrack }: any) {
   );
 }
 
-function InstagramMockup({ zine, heroImageUrl, primaryTrack }: any) {
+function InstagramMockup({ zine, heroImageUrl, primaryTrack, ...anyOtherProps }: any) {
   return (
     <div className="relative w-[400px] bg-white border border-slate-200 shadow-xl flex-shrink-0">
       {/* Header */}

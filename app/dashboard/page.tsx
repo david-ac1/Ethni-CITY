@@ -8,6 +8,15 @@ import SoundSpirit from "@/components/SoundSpirit";
 import { useEthniStore, PhotoTrip } from "@/lib/store";
 import type { CesiumMapHandle } from "@/components/CesiumMap";
 
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 const compressImage = (file: File, maxWidth = 1024, maxHeight = 1024, quality = 0.8): Promise<File> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -176,6 +185,9 @@ export default function DashboardPage() {
     setAgentStatus("✨ Writing your Sonic Story-Zine...");
 
     try {
+      // Step 0: Convert the local file to a persistent Base64 string so it survives page navigation
+      const base64Photo = await fileToBase64(activeTrip.file);
+
       const res = await fetch("/api/generate-zine", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -190,7 +202,7 @@ export default function DashboardPage() {
             vibe_descriptors: activeTrip.analysis.vibe_descriptors,
             architecture_style: activeTrip.analysis.architecture_style,
           },
-          photo_url: activeTrip.previewUrl,
+          photo_url: base64Photo,
           featured_artist: featuredArtist,
           all_artists: discoveredArtists,
           location_music_context: useEthniStore.getState().locationMusicContext,

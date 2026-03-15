@@ -226,7 +226,7 @@ export default function ZinePage({ params }: ZinePageProps) {
             {/* The mockups component takes the full zine object to build the UI */}
             <SocialMockups 
               zine={zine} 
-              heroImageUrl="https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=1000&auto=format&fit=crop" 
+              heroImageUrl={displayData.photo_url} 
             />
           </div>
         )}

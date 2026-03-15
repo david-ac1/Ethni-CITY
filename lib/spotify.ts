@@ -111,8 +111,8 @@ export async function searchArtistTrack(
             // Stop once we have 5 tracks
             if (results.length >= 5) break;
             
-            // Deduplicate (don't add the recommended track twice)
-            if (!seenTrackIds.has(track.id)) {
+            // Deduplicate and ONLY add tracks that have a playable preview_url
+            if (!seenTrackIds.has(track.id) && track.preview_url) {
               results.push({
                 trackName: track.name,
                 previewUrl: track.preview_url,
