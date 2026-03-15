@@ -72,16 +72,29 @@ export async function searchArtistTrack(
       if (searchRes.ok) {
         const searchData = await searchRes.json();
         specificTrack = searchData.tracks?.items?.[0];
-        
-        if (specificTrack && specificTrack.preview_url) {
-          results.push({
-            trackName: specificTrack.name,
-            previewUrl: specificTrack.preview_url,
-            albumArtUrl: specificTrack.album?.images?.[0]?.url || null,
-            spotifyUrl: specificTrack.external_urls?.spotify || "",
-          });
-          seenTrackIds.add(specificTrack.id);
+      }
+
+      // Fallback: If no specific track found with title, try just the artist name to see if they exist
+      if (!specificTrack) {
+        console.log(`Specific track search failed for ${artistName}, falling back to artist-only search...`);
+        const artistFallbackRes = await fetch(
+          `https://api.spotify.com/v1/search?q=${encodeURIComponent('artist:' + artistName)}&type=track&limit=1`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (artistFallbackRes.ok) {
+          const fallbackData = await artistFallbackRes.json();
+          specificTrack = fallbackData.tracks?.items?.[0];
         }
+      }
+        
+      if (specificTrack && specificTrack.preview_url) {
+        results.push({
+          trackName: specificTrack.name,
+          previewUrl: specificTrack.preview_url,
+          albumArtUrl: specificTrack.album?.images?.[0]?.url || null,
+          spotifyUrl: specificTrack.external_urls?.spotify || "",
+        });
+        seenTrackIds.add(specificTrack.id);
       }
     }
 
@@ -99,7 +112,7 @@ export async function searchArtistTrack(
       
       if (artistId) {
         const topTracksRes = await fetch(
-          `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`,
+          `https://api.spotify.com/v1/artists/${artistId}/top-tracks`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
@@ -155,7 +168,7 @@ export async function getArtistTopTrack(
     if (!artist) return null;
 
     const topTracksRes = await fetch(
-      `https://api.spotify.com/v1/artists/${artist.id}/top-tracks?market=US`,
+      `https://api.spotify.com/v1/artists/${artist.id}/top-tracks`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
 

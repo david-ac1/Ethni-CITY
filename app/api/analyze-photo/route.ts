@@ -1,7 +1,5 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import { runSmartGemini } from "@/lib/gemini";
 import { NextRequest, NextResponse } from "next/server";
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!);
 
 const ANALYSIS_PROMPT = `You are an expert cultural geographer and ethnomusicologist specializing in the Global South.
 
@@ -41,46 +39,28 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const base64 = Buffer.from(bytes).toString("base64");
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: {
-        responseMimeType: "application/json",
-      },
-      safetySettings: [
-        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-      ],
-    });
-
-    let result;
-    let retries = 3;
-    while (retries > 0) {
-      try {
-        result = await model.generateContent([
-          {
-            inlineData: {
-              mimeType: file.type as "image/jpeg" | "image/png" | "image/webp",
-              data: base64,
-            },
+    let resultText = "";
+    try {
+      resultText = await runSmartGemini([
+        {
+          inlineData: {
+            mimeType: file.type as "image/jpeg" | "image/png" | "image/webp",
+            data: base64,
           },
-          ANALYSIS_PROMPT,
-        ]);
-        break; // Success, break out of loop
-      } catch (err: any) {
-        retries--;
-        console.warn(`Gemini API error in analyze-photo, retries left: ${retries} | Error: ${err.message}`);
-        if (retries === 0) throw err;
-        // Wait 3 seconds before retrying to let the gateway clear
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-      }
+        },
+        ANALYSIS_PROMPT,
+      ], {
+        responseMimeType: "application/json",
+      });
+    } catch (err: any) {
+      console.error("Gemini API error in analyze-photo:", err);
+      throw err;
     }
     
-    if (!result) throw new Error("Failed to generate content after retries");
-
-    const rawText = result.response.text().trim();
+    if (!resultText) throw new Error("Failed to generate content");
 
     // Strip markdown code fences if present
-    const jsonText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+    const jsonText = resultText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
     const analysis = JSON.parse(jsonText);
 
     // Geocode the location using Google Maps Geocoding API

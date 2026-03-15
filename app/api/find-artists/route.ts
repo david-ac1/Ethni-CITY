@@ -1,6 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { runSmartGemini } from "@/lib/gemini";
 import { NextRequest, NextResponse } from "next/server";
-
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!);
 
 function buildArtistPrompt(
@@ -65,18 +64,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, artists: [], location_music_context: "Location could not be determined from the photo.", zine_hook: "" });
     }
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: {
-        temperature: 0.4,
-        topP: 0.9,
-        responseMimeType: "application/json",
-      },
-    });
-
     const prompt = buildArtistPrompt(city, country, neighbourhood, cultural_markers, vibe_descriptors);
     
     let validArtists: any[] = [];
+    const seenNames = new Set<string>();
     let attempts = 0;
     let finalContext = "";
     let finalHook = "";
@@ -85,9 +76,14 @@ export async function POST(req: NextRequest) {
     console.log(`Starting artist persistence loop for ${city}, ${country}...`);
 
     while (validArtists.length < 5 && attempts < 3) {
-      console.log(`Attempt ${attempts + 1}: Asking Gemini for 8 artists...`);
-      const result = await model.generateContent(prompt);
-      const rawText = result.response.text().trim();
+      console.log(`Attempt ${attempts + 1}: Asking Gemini for artists...`);
+      
+      const rawText = await runSmartGemini(prompt, {
+        temperature: 0.4,
+        topP: 0.9,
+        responseMimeType: "application/json",
+      });
+      
       const jsonText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
       
       let artistData;
@@ -118,8 +114,9 @@ export async function POST(req: NextRequest) {
         const filtered = enrichedArtists.filter((a) => a.spotify_tracks && a.spotify_tracks.length > 0);
         
         for (const f of filtered) {
-          if (!validArtists.find(va => va.name === f.name)) {
+          if (!seenNames.has(f.name.toLowerCase())) {
             validArtists.push(f);
+            seenNames.add(f.name.toLowerCase());
             console.log(`✅ Verified streamable artist: ${f.name}`);
           }
         }

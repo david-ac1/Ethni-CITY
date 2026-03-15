@@ -1,7 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { runSmartGemini } from "@/lib/gemini";
 import { NextRequest, NextResponse } from "next/server";
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!);
 
 interface Artist {
   name: string;
@@ -36,14 +34,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as GenerateZineBody;
     const { location, photo_analysis, photo_url, featured_artist, all_artists, location_music_context, zine_hook } = body;
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: {
-        temperature: 0.85,
-        topP: 0.95,
-      },
-    });
-
     const prompt = `You are a Creative Director for a premium editorial magazine called "Ethni-CITY" — a publication that celebrates the niche music of the Global South through visual storytelling.
 
 You have been handed a travel photo from ${location.neighbourhood}, ${location.city}, ${location.country}.
@@ -66,9 +56,13 @@ Your task: Generate the editorial copy for a Sonic Story-Zine spread. Return ONL
   "zine_id": "string — URL-safe ID like '${location.city.toLowerCase().replace(/\s+/g, '-')}-${featured_artist.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}-01'"
 }`;
 
-    const result = await model.generateContent(prompt);
-    const rawText = result.response.text().trim();
-    const jsonText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+    const zineText = await runSmartGemini(prompt, {
+      temperature: 0.85,
+      topP: 0.95,
+      responseMimeType: "application/json",
+    });
+
+    const jsonText = zineText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
     const zineContent = JSON.parse(jsonText);
 
     return NextResponse.json({
