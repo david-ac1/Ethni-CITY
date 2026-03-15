@@ -126,6 +126,17 @@ Follow these steps to reproduce the full **Ethni-CITY** experience:
 
 ---
 
+## ☁️ Proof of Google Cloud Services
+This project leverages the **Google Cloud AI** ecosystem as its core engine. Per the hackathon requirements, the following file serves as proof of our integration with Google Cloud services and APIs:
+
+- **[lib/gemini.ts](https://github.com/david-ac1/Ethni-CITY/blob/main/lib/gemini.ts)**: This file demonstrates the use of the `@google/generative-ai` SDK to communicate with **Vertex AI-compatible Gemini endpoints** (`gemini-3.1-pro-preview`, `gemini-2.0-flash`, and `gemini-1.5-flash`), including our custom hierarchical resilience logic.
+
+Furthermore, the project utilizes:
+- **Google Maps Geocoding API**: For cultural/neighborhood spatial grounding.
+- **Google Cloud Photorealistic 3D Tiles**: Served via CesiumJS for high-fidelity spatial storytelling.
+
+---
+
 ## ⚖️ Acceptance Use Policy
 Ethni-CITY adheres to the Google Cloud Acceptable Use Policy. All content is generated responsibly, and all source artists are credited and linked via official preview APIs.
 
