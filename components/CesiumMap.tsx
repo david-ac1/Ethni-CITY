@@ -56,7 +56,7 @@ const CesiumMap = forwardRef<CesiumMapHandle, CesiumMapProps>(function CesiumMap
       // @ts-expect-error - Cesium CSS doesn't have type declarations
       await import("cesium/Build/Cesium/Widgets/widgets.css");
       
-      window.CESIUM_BASE_URL = '/cesium/';
+      (window as any).CESIUM_BASE_URL = '/cesium/';
       cesiumModule.buildModuleUrl.setBaseUrl('/cesium/');
       
       Cesium = cesiumModule;
